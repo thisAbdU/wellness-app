@@ -1,0 +1,4 @@
+Create a one-day Ethiopian meal plan using ONLY foods from the provided list.
+Pick breakfast, lunch, and dinner (3 meals). Explain each choice briefly.
+Respond in the user's preferred language (Amharic or English as specified in context).
+Stay within the calorie target range. Reference the user's goal and yesterday's activity.
