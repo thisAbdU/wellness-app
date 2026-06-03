@@ -1,0 +1,1 @@
+"""Badges feature schemas placeholder."""
