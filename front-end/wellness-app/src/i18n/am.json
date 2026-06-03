@@ -1,0 +1,18 @@
+{
+    "common": {
+      "viewAll": "ሁሉንም ይመልከቱ"
+    },
+    "home": {
+      "greeting": "እንደምን አደሩ",
+      "subtitle": "የዛሬ የጤና አጠቃላይ ሁኔታዎ ዝግጁ ነው።",
+      "wellnessScore": "የጤና ውጤት",
+      "wellnessMessage": "በጥሩ ሁኔታ እየተጓዙ ነው። ቀጥሉ።",
+      "quickActions": "ፈጣን እርምጃዎች",
+      "quickActionsSubtitle": "ከአስፈላጊው ጀምሩ",
+      "checkIn": "አሁን ያረጋግጡ",
+      "insights": "እይታዎች",
+      "todaySummary": "የዛሬ ማጠቃለያ",
+      "stepsLabel": "ደረጃዎች: {{count}}",
+      "sleepLabel": "እንቅልፍ: {{hours}}"
+    }
+  }

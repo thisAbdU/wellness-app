@@ -1,0 +1,18 @@
+{
+    "common": {     
+      "viewAll": "View all"
+    },
+    "home": {
+      "greeting": "Good morning",
+      "subtitle": "Your wellness overview is ready.",
+      "wellnessScore": "Wellness score",
+      "wellnessMessage": "You are doing well. Keep the momentum.",
+      "quickActions": "Quick actions",
+      "quickActionsSubtitle": "Start with the most important tasks",
+      "checkIn": "Check in",
+      "insights": "Insights",
+      "todaySummary": "Today summary",
+      "stepsLabel": "Steps: {{count}}",
+      "sleepLabel": "Sleep: {{hours}}"
+    }
+  }
