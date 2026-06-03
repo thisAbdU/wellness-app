@@ -21,18 +21,27 @@ Backend for the Wellness Tracker app built with FastAPI, Supabase, and Python.
    ```
 
 3. Install dependencies:
-   ```powershell
-   pip install -r requirements.txt
+   ```bash
+   pip install --default-timeout=120 -r requirements.txt
    ```
 
-4. Create `.env` from `.env.example` and set:
+   Optional (voice, FCM push, SMS) — install separately if the full download times out:
+   ```bash
+   pip install --default-timeout=300 -r requirements-optional.txt
+   ```
+
+4. Run Supabase migration `supabase/migrations/005_health_records_sync_ai.sql` in the Supabase SQL editor.
+
+5. Create `.env` from `.env.example` and set:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
+   - `GEMINI_API_KEY` (required for coach insights)
+   - `CORS_ORIGINS` (optional; defaults include Expo dev ports)
 
-5. Run the server:
-   ```powershell
-   uvicorn app.main:app --reload
+6. Run the server (from `backend/`):
+   ```bash
+   python run.py
    ```
 
 Swagger docs:
@@ -44,6 +53,8 @@ Swagger docs:
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `GEMINI_API_KEY`
+- `CORS_ORIGINS`
 
 Warning:
 
@@ -70,6 +81,14 @@ Warning:
 | POST | `/challenges/{challenge_id}/join` | Bearer token | Joins a challenge |
 | GET | `/challenges/me` | Bearer token | Returns the authenticated user’s challenges |
 | GET | `/leaderboards` | Public | Returns public leaderboard rankings |
+| GET | `/health` | Public | Uptime check `{"status": "ok"}` |
+| POST | `/api/v1/health/sync` | Bearer token | Batched granular health records + daily aggregation |
+| GET | `/api/v1/health/summary?from=&to=` | Bearer token | Precomputed daily summaries (`health_daily_summaries`) |
+| POST | `/api/v1/sync/push` | Bearer token | Offline push with conflict resolution |
+| GET | `/api/v1/sync/pull?since=` | Bearer token | Delta pull of server-side records |
+| POST | `/api/v1/coach/insight` | Bearer token | Cached or fresh Gemini coach insight |
+
+Legacy `POST /health/sync` (daily summary + gamification) is unchanged for existing mobile integration.
 
 ## Testing Flow
 

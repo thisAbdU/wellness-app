@@ -1,0 +1,2 @@
+Assess burnout risk from the data: high activity with poor sleep, rising resting heart rate, or declining wellness scores.
+If risk is low, acknowledge recovery briefly. If elevated, suggest one concrete recovery action for the next 48 hours.

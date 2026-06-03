@@ -1,0 +1,4 @@
+Name the pattern type explicitly (e.g. LOW_ACTIVITY_DAY on Wednesday).
+Cite the exact numbers from the pattern object.
+Suggest one specific scheduling intervention (e.g. block 20 minutes after lunch on Wednesdays for a walk).
+Keep to 2–3 sentences, Ethiopian daily-life context.

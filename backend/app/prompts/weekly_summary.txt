@@ -1,0 +1,4 @@
+Respond in exactly 2–3 sentences.
+Reference the user's real numbers from the JSON context (averages, deltas, goal hit days).
+Give one concrete actionable suggestion grounded in Ethiopian daily life (morning walk, park, injera portions — not generic gym advice).
+Highlight the strongest trend and one area to improve.
