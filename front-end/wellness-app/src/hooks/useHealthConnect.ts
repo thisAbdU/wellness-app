@@ -13,11 +13,14 @@ export type HealthData = {
   workoutCount: number | null;
 };
 
+export type DataSource = 'health_connect' | 'none';
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'unavailable' | 'error';
 
 export type HealthState = {
   status: ConnectionStatus;
   data: HealthData;
+  source: DataSource;
+  hasAnyData: boolean;
 };
 
 const EMPTY: HealthData = {
@@ -27,15 +30,31 @@ const EMPTY: HealthData = {
   workoutCount: null,
 };
 
+const UNAVAILABLE_STATE: HealthState = {
+  status: 'unavailable',
+  data: EMPTY,
+  source: 'none',
+  hasAnyData: false,
+};
+
+const ERROR_STATE: HealthState = {
+  status: 'error',
+  data: EMPTY,
+  source: 'none',
+  hasAnyData: false,
+};
+
 export function useHealthConnect(): HealthState {
   const [state, setState] = useState<HealthState>({
     status: 'idle',
     data: EMPTY,
+    source: 'none',
+    hasAnyData: false,
   });
 
   useEffect(() => {
     if (Platform.OS !== 'android') {
-      setState({ status: 'unavailable', data: EMPTY });
+      setState(UNAVAILABLE_STATE);
       return;
     }
 
@@ -47,7 +66,7 @@ export function useHealthConnect(): HealthState {
       try {
         const available = await initialize();
         if (!available) {
-          setState({ status: 'unavailable', data: EMPTY });
+          setState(UNAVAILABLE_STATE);
           return;
         }
 
@@ -66,7 +85,6 @@ export function useHealthConnect(): HealthState {
         yesterday8pm.setDate(yesterday8pm.getDate() - 1);
         yesterday8pm.setHours(20, 0, 0, 0);
 
-        // ── fetch all 4 in parallel ──────────────────────────────────────────
         const [stepsRes, sleepRes, hrRes, workoutRes] = await Promise.all([
           readRecords('Steps', {
             timeRangeFilter: {
@@ -100,27 +118,27 @@ export function useHealthConnect(): HealthState {
 
         if (cancelled) return;
 
-        // ── steps ────────────────────────────────────────────────────────────
         const steps = stepsRes.records.reduce((sum, r) => sum + r.count, 0);
 
-        // ── sleep in hours ───────────────────────────────────────────────────
         const sleepMs = sleepRes.records.reduce((sum, r) => {
           return sum + (new Date(r.endTime).getTime() - new Date(r.startTime).getTime());
         }, 0);
         const sleepHours = sleepMs > 0 ? Math.round((sleepMs / 3_600_000) * 10) / 10 : null;
 
-        // ── avg heart rate ───────────────────────────────────────────────────
         const allSamples = hrRes.records.flatMap(r => r.samples ?? []);
         const avgHeartRate =
           allSamples.length > 0
             ? Math.round(allSamples.reduce((s, x) => s + x.beatsPerMinute, 0) / allSamples.length)
             : null;
 
-        // ── workout count ────────────────────────────────────────────────────
         const workoutCount = workoutRes.records.length;
+
+        const hasAnyData = steps > 0 || sleepMs > 0 || allSamples.length > 0;
 
         setState({
           status: 'connected',
+          source: 'health_connect',
+          hasAnyData,
           data: {
             steps: steps || null,
             sleepHours,
@@ -129,7 +147,7 @@ export function useHealthConnect(): HealthState {
           },
         });
       } catch (e) {
-        if (!cancelled) setState({ status: 'error', data: EMPTY });
+        if (!cancelled) setState(ERROR_STATE);
       }
     }
 

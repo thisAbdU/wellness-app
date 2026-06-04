@@ -13,6 +13,77 @@
       "insights": "Insights",
       "todaySummary": "Today summary",
       "stepsLabel": "Steps: {{count}}",
-      "sleepLabel": "Sleep: {{hours}}"
-    }
+      "sleepLabel": "Sleep: {{hours}}",
+      "fromLastWeek": "from last week"
+    },
+      "onboarding": {
+    "title": "Track your wellness automatically",
+    "subtitle": "Health data, insights, and check-ins in one place",
+    "cardTitle": "Start simple",
+    "cardBody": "Connect your data later. For now the app is ready.",
+    "getStarted": "Get started"
+  },
+  "checkin": {
+    "title": "Daily check-in",
+    "subtitle": "Tell us how you feel",
+    "question1": "How is your energy?",
+    "question1Hint": "Pick one",
+    "question2": "How is your stress today?",
+    "question2Hint": "You can change this later",
+    "low": "Low",
+    "ok": "Okay",
+    "high": "High",
+    "saveCheckIn": "Save check-in"
+  },
+  "insight": {
+    "title": "Insights",
+    "subtitle": "Your patterns at a glance",
+    "recentTrend": "Recent trend",
+    "sleepTrend": "Sleep trend",
+    "sleepTrendBody": "You slept better than last week.",
+    "activityTrend": "Activity trend",
+    "activityTrendBody": "Your movement is staying steady."
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Preferences and account",
+    "language": "Language",
+    "languageHint": "Choose your preferred language",
+    "signOut": "Sign out"
+  },
+  "explore": {
+    "title": "Explore",
+    "subtitle": "Ideas and challenges",
+    "todayChallenge": "Today challenge",
+    "todayChallengeBody": "Take a 10 minute walk after lunch.",
+    "recommended": "Recommended for you",
+    "recommendedBody": "A short stretch session before bed."
+  },
+     "auth": {
+    "signInTitle": "Welcome back",
+    "signInSubtitle": "Sign in to continue",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithPhone": "Continue with phone",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "phoneNumber": "Phone number",
+    "sendCode": "Send code",
+    "orContinueWith": "Or continue with",
+     "signUpTitle": "Create account",
+    "signUpSubtitle": "Join Wellness and start tracking your day",
+    "createAccount": "Create account",
+    "confirmPassword": "Confirm password",
+    "alreadyHaveAccount": "Already have an account?",
+    "resetPasswordTitle": "Reset password",
+    "resetPasswordSubtitle": "We will send you a reset link",
+    "sendResetLink": "Send reset link",
+    "backTo": "Back to",
+    "phoneTitle": "Continue with phone",
+    "phoneSubtitle": "We will send a verification code",
+    "verificationCode": "Verification code",
+    "verifyCode": "Verify code"
+  }
   }

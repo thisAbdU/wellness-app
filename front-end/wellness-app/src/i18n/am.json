@@ -13,6 +13,77 @@
       "insights": "እይታዎች",
       "todaySummary": "የዛሬ ማጠቃለያ",
       "stepsLabel": "ደረጃዎች: {{count}}",
-      "sleepLabel": "እንቅልፍ: {{hours}}"
-    }
+      "sleepLabel": "እንቅልፍ: {{hours}}",
+      "fromLastWeek": "ካለፈው ሳምንት"
+    },
+    "onboarding": {
+    "title": "የጤንነትዎን ሁኔታ በራስ-ሰር ይከታተሉ",
+    "subtitle": "የጤና ውሂብ፣ ግንዛቤዎች እና የዕለት ተዕለት ክትትሎች በአንድ ቦታ",
+    "cardTitle": "በቀላሉ ይጀምሩ",
+    "cardBody": "ውሂብዎን በኋላ ያገናኙ። ለአሁኑ መተግበሪያው ዝግጁ ነው።",
+    "getStarted": "ይጀምሩ"
+  },
+  "checkin": {
+    "title": "ዕለታዊ ክትትል",
+    "subtitle": "እንዴት እንደሚሰማዎት ይንገሩን",
+    "question1": "የጉልበት መጠንዎ እንዴት ነው?",
+    "question1Hint": "አንዱን ይምረጡ",
+    "question2": "የዛሬው የጭንቀት መጠንዎ እንዴት ነው?",
+    "question2Hint": "ይህንን በኋላ መቀየር ይችላሉ",
+    "low": "ዝቅተኛ",
+    "ok": "ደህና",
+    "high": "ከፍተኛ",
+    "saveCheckIn": "ክትትሉን ያስቀምጡ"
+  },
+  "insight": {
+    "title": "ግንዛቤዎች",
+    "subtitle": "የእርስዎ ልምዶች በጨረፍታ",
+    "recentTrend": "የቅርብ ጊዜ አዝማሚያ",
+    "sleepTrend": "የእንቅልፍ አዝማሚያ",
+    "sleepTrendBody": "ካለፈው ሳምንት በተሻለ ተኝተዋል።",
+    "activityTrend": "የእንቅስቃሴ አዝማሚያ",
+    "activityTrendBody": "እንቅስቃሴዎ የተረጋጋ ነው።"
+  },
+  "profile": {
+    "title": "መገለጫ",
+    "subtitle": "ምርጫዎች እና መለያ",
+    "language": "ቋንቋ",
+    "languageHint": "የሚመርጡትን ቋንቋ ይምረጡ",
+    "signOut": "ውጣ"
+  },
+  "explore": {
+    "title": "ያስሱ",
+    "subtitle": "ሀሳቦች እና ተግዳሮቶች",
+    "todayChallenge": "የዛሬ ተግዳሮት",
+    "todayChallengeBody": "ከምሳ በኋላ ለ10 ደቂቃ የእግር ጉዞ ያድርጉ።",
+    "recommended": "ለእርስዎ የተመከሩ",
+    "recommendedBody": "ከመተኛትዎ በፊት አጭር የሰውነት ማሳሳያ ያድርጉ።"
+  },
+    "auth": {
+    "signInTitle": "እንኳን ደህና ተመለሱ",
+    "signInSubtitle": "ለመቀጠል ይግቡ",
+    "email": "ኢሜይል",
+    "password": "የይለፍ ቃል",
+    "signIn": "ይግቡ",
+    "continueWithGoogle": "በGoogle ይቀጥሉ",
+    "continueWithPhone": "በስልክ ይቀጥሉ",
+    "forgotPassword": "የይለፍ ቃል ረሱ?",
+    "resetPassword": "የይለፍ ቃል ዳግም ያስጀምሩ",
+    "phoneNumber": "ስልክ ቁጥር",
+    "sendCode": "ኮድ ላክ",
+    "orContinueWith": "ወይም በዚህ ይቀጥሉ",
+    "signUpTitle": "መለያ ይፍጠሩ",
+  "signUpSubtitle": "Wellnessን ይቀላቀሉ እና ቀንዎን መከታተል ይጀምሩ",
+  "createAccount": "መለያ ይፍጠሩ",
+  "confirmPassword": "የይለፍ ቃል ያረጋግጡ",
+  "alreadyHaveAccount": "አስቀድሞ መለያ አለዎት?",
+  "resetPasswordTitle": "የይለፍ ቃል ዳግም ያስጀምሩ",
+  "resetPasswordSubtitle": "የዳግም ማስጀመሪያ አገናኝ እንልክልዎታለን",
+  "sendResetLink": "የዳግም ማስጀመሪያ አገናኝ ላክ",
+  "backTo": "ተመለስ ወደ",
+  "phoneTitle": "በስልክ ይቀጥሉ",
+  "phoneSubtitle": "የማረጋገጫ ኮድ እንልክልዎታለን",
+  "verificationCode": "የማረጋገጫ ኮድ",
+  "verifyCode": "ኮድ ያረጋግጡ"
+  }
   }
