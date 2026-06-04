@@ -53,9 +53,11 @@ export function AppScreen({
       <View
         style={[
           styles.inner,
+          styles.fill,
           {
             paddingHorizontal: contentPadding,
           },
+          contentStyle,
         ]}
       >
         {children}
@@ -80,5 +82,8 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
+  },
+  fill: {
+    flex: 1,
   },
 });

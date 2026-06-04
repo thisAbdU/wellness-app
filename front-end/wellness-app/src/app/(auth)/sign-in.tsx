@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { navigate, replace } from '@/lib/router';
 
-import { AppScreen } from '@/components/ui/AppScreen';
-import { AppCard } from '@/components/ui/AppCard';
+import { AuthCardLayout } from '@/components/ui/AuthCardLayout';
+import { markAuthenticated } from '@/lib/appState';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppText } from '@/components/ui/AppText';
 import { AuthHeader } from '@/components/auth/AuthHeader';
@@ -21,14 +22,12 @@ export default function SignInScreen() {
   const [password, setPassword] = useState('');
 
   return (
-    <AppScreen>
-      <View style={styles.container}>
-        <AuthHeader
-          title={i18n.t('auth.signInTitle')}
-          subtitle={i18n.t('auth.signInSubtitle')}
-        />
-
-        <AppCard style={styles.card}>
+    <AuthCardLayout>
+      <AuthHeader
+        title={i18n.t('auth.signInTitle')}
+        subtitle={i18n.t('auth.signInSubtitle')}
+      />
+      <View style={styles.card}>
           <View style={styles.fields}>
             <AuthTextField
               label={i18n.t('auth.email')}
@@ -54,21 +53,26 @@ export default function SignInScreen() {
           <AppButton
             label={i18n.t('auth.signIn')}
             onPress={() => {
-              // Supabase will go here later
-             // router.replace('/(tabs)');
+              markAuthenticated();
+              replace('/(auth)/profile-setup/step-1');
             }}
           />
 
           <AuthLinkRow
             label={i18n.t('auth.forgotPassword')}
             actionLabel={i18n.t('auth.resetPassword')}
-            onActionPress={() => router.push('/(auth)/reset-password')}
+            onActionPress={() => navigate('/(auth)/reset-password')}
           />
-        </AppCard>
+          <AuthLinkRow
+            label="New here?"
+            actionLabel={i18n.t('auth.createAccount')}
+            onActionPress={() => navigate('/(auth)/sign-up')}
+          />
+      </View>
 
-        <AuthDivider label={i18n.t('auth.orContinueWith')} />
+      <AuthDivider label={i18n.t('auth.orContinueWith')} />
 
-        <View style={styles.socialStack}>
+      <View style={styles.socialStack}>
           <AuthSocialButton
             label={i18n.t('auth.continueWithGoogle')}
             onPress={() => {
@@ -85,7 +89,7 @@ export default function SignInScreen() {
 
           <AuthSocialButton
             label={i18n.t('auth.continueWithPhone')}
-            onPress={() => router.push('/(auth)/phone')}
+            onPress={() => navigate('/(auth)/phone')}
             icon={
               <View style={styles.phoneIcon}>
                 <AppText variant="bodyStrong" style={styles.phoneIconText}>
@@ -94,16 +98,12 @@ export default function SignInScreen() {
               </View>
             }
           />
-        </View>
       </View>
-    </AppScreen>
+    </AuthCardLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: Spacing.four,
-  },
   card: {
     gap: Spacing.four,
   },

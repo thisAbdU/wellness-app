@@ -13,8 +13,9 @@ export function AuthHeader({ title, subtitle }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.badge}>
+        <AppText style={styles.badgeIcon}>🌿</AppText>
         <AppText variant="caption" style={styles.badgeText}>
-          Wellness
+          Your wellness space
         </AppText>
       </View>
 
@@ -34,24 +35,32 @@ export function AuthHeader({ title, subtitle }: Props) {
 const styles = StyleSheet.create({
   container: {
     gap: Spacing.two,
-    marginBottom: Spacing.five,
+    marginBottom: Spacing.four,
   },
   badge: {
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
+    paddingVertical: Spacing.two,
     borderRadius: 999,
     backgroundColor: Colors.light.primaryLight,
+    borderWidth: 1,
+    borderColor: 'rgba(47, 107, 78, 0.1)',
   },
+  badgeIcon: { fontSize: 14 },
   badgeText: {
     color: Colors.light.primary,
     fontWeight: '700',
+    letterSpacing: 0.3,
   },
   title: {
     color: Colors.light.text,
+    letterSpacing: -0.3,
   },
   subtitle: {
     color: Colors.light.textSecondary,
-    lineHeight: 20,
+    lineHeight: 22,
   },
 });

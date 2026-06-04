@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
 
   primary: {
     backgroundColor: Colors.light.primary,
+    borderWidth: 0,
   },
   secondary: {
     backgroundColor: Colors.light.primaryLight,

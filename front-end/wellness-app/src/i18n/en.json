@@ -16,12 +16,12 @@
       "sleepLabel": "Sleep: {{hours}}",
       "fromLastWeek": "from last week"
     },
-      "onboarding": {
-    "title": "Track your wellness automatically",
-    "subtitle": "Health data, insights, and check-ins in one place",
-    "cardTitle": "Start simple",
-    "cardBody": "Connect your data later. For now the app is ready.",
-    "getStarted": "Get started"
+  "onboarding": {
+    "title": "Your calm companion for daily wellness",
+    "subtitle": "Gentle tracking, mindful insights, and habits that fit your life",
+    "getStarted": "Begin your journey",
+    "continue": "Continue",
+    "skip": "Skip"
   },
   "checkin": {
     "title": "Daily check-in",
@@ -59,9 +59,9 @@
     "recommended": "Recommended for you",
     "recommendedBody": "A short stretch session before bed."
   },
-     "auth": {
+  "auth": {
     "signInTitle": "Welcome back",
-    "signInSubtitle": "Sign in to continue",
+    "signInSubtitle": "Pick up where you left off on your wellness journey",
     "email": "Email",
     "password": "Password",
     "signIn": "Sign in",
@@ -72,8 +72,8 @@
     "phoneNumber": "Phone number",
     "sendCode": "Send code",
     "orContinueWith": "Or continue with",
-     "signUpTitle": "Create account",
-    "signUpSubtitle": "Join Wellness and start tracking your day",
+    "signUpTitle": "Start your wellness journey",
+    "signUpSubtitle": "Create a calm space to track habits, health, and growth",
     "createAccount": "Create account",
     "confirmPassword": "Confirm password",
     "alreadyHaveAccount": "Already have an account?",
