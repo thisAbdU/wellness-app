@@ -6,16 +6,25 @@ import { useHealthConnect } from './useHealthConnect';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function useDashboard() {
-  const { profile } = useAuth();
+  const { profile, user, isLoading: authLoading } = useAuth();
   const health = useHealthConnect();
   const [wellnessScore, setWellnessScore] = useState<WellnessScore | null>(null);
   const [streaks, setStreaks] = useState<Streak[]>([]);
   const [insight, setInsight] = useState<string | null>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
   const [calories, setCalories] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    if (authLoading) return;
+    if (!user?.id) {
+      setStreaks([]);
+      setInsight(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -31,8 +40,9 @@ export function useDashboard() {
         if (cached?.wellness_score) setWellnessScore(cached.wellness_score);
       }
 
+      setInsightLoading(true);
       const [streakData, insightData] = await Promise.all([
-        api.streaks.me(),
+        api.streaks.me().catch(() => [] as Streak[]),
         api.coach.insight('DAILY_NUDGE').catch(() => null),
       ]);
       setStreaks(streakData);
@@ -40,9 +50,10 @@ export function useDashboard() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load dashboard');
     } finally {
+      setInsightLoading(false);
       setLoading(false);
     }
-  }, [health.hasAnyData, health.data]);
+  }, [authLoading, user?.id, health.hasAnyData, health.data]);
 
   useEffect(() => {
     refresh();
@@ -61,6 +72,7 @@ export function useDashboard() {
     wellnessStreak,
     activityStreak,
     insight,
+    insightLoading,
     calories,
     loading,
     error,

@@ -15,7 +15,11 @@ export class ApiError extends Error {
 
 async function getAccessToken(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
-  return data.session?.access_token ?? null;
+  if (data.session?.access_token) {
+    return data.session.access_token;
+  }
+  const { data: refreshed } = await supabase.auth.refreshSession();
+  return refreshed.session?.access_token ?? null;
 }
 
 export async function apiFetch<T>(
@@ -23,6 +27,13 @@ export async function apiFetch<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const token = await getAccessToken();
+  // If the app is making a protected API call but there's no session token,
+  // throw early to avoid noisy 401s from the backend and surface a clearer error.
+  const protectedPrefixes = ['/api/v1', '/streaks', '/badges', '/challenges', '/leaderboards', '/health', '/analytics'];
+  const isProtected = protectedPrefixes.some((p) => path.startsWith(p));
+  if (!token && isProtected) {
+    throw new ApiError(401, 'Not authenticated');
+  }
   const headers: Record<string, string> = {
     Accept: 'application/json',
     ...(options.headers as Record<string, string>),

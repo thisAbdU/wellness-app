@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { replace } from '@/lib/router';
 import { AuthCardLayout } from '@/components/ui/AuthCardLayout';
 import { AppButton } from '@/components/ui/AppButton';
@@ -34,7 +34,13 @@ export default function ProfileStep6() {
       }
       replace('/(app)/(tabs)/home');
     } catch (e) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'Failed to save profile');
+      const message = e instanceof Error ? e.message : 'Failed to save profile';
+      console.error('[profile-setup step-6]', e);
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.alert(`Error: ${message}`);
+      } else {
+        Alert.alert('Error', message);
+      }
     } finally {
       setLoading(false);
     }

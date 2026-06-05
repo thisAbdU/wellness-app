@@ -8,6 +8,7 @@ import { AppButton } from '@/components/ui/AppButton';
 import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 type InsightResponse = {
   insight_type: string;
@@ -17,6 +18,7 @@ type InsightResponse = {
 };
 
 export default function CoachExpanded() {
+  const { user, isLoading: authLoading } = useAuth();
   const [insight, setInsight] = useState<InsightResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +27,11 @@ export default function CoachExpanded() {
   const soundRef = useRef<Audio.Sound | null>(null);
 
   const loadInsight = useCallback(async () => {
+    if (authLoading) return;
     setLoading(true);
     setError(null);
     try {
+      if (!user?.id) throw new Error('Not signed in');
       const data = await api.coach.insight('DAILY_NUDGE');
       setInsight(data as InsightResponse);
     } catch (e) {
@@ -35,7 +39,7 @@ export default function CoachExpanded() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authLoading, user?.id]);
 
   useEffect(() => {
     loadInsight();

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { AppText } from '@/components/ui/AppText';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 
@@ -22,6 +22,8 @@ export function WellnessScoreCard({ score, change, message, onPress }: Props) {
   }, [anim, score]);
 
   const barWidth = anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
+  const { width } = useWindowDimensions();
+  const small = width < 360;
 
   return (
     <Pressable onPress={onPress} style={styles.card}>
@@ -29,7 +31,7 @@ export function WellnessScoreCard({ score, change, message, onPress }: Props) {
         Wellness score
       </AppText>
       <View style={styles.row}>
-        <AppText style={styles.number}>{score}</AppText>
+    <AppText style={[styles.number, small ? styles.numberSmall : null]}>{score}</AppText>
         {change ? <AppText style={styles.change}>{change}</AppText> : null}
       </View>
       <AppText style={styles.message}>{message}</AppText>
@@ -42,10 +44,17 @@ export function WellnessScoreCard({ score, change, message, onPress }: Props) {
 
 const styles = StyleSheet.create({
   card: {
+    width: '100%',
     backgroundColor: Colors.light.tint,
     borderRadius: Radius.xl,
-    padding: Spacing.four,
-    marginBottom: Spacing.three,
+    padding: Spacing.three,
+    marginBottom: Spacing.two,
+    // subtle shadow
+    shadowColor: Colors.light.cardShadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 3,
   },
   label: { color: 'rgba(255,255,255,0.65)', marginBottom: Spacing.two },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: 12 },
@@ -54,4 +63,5 @@ const styles = StyleSheet.create({
   message: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginVertical: Spacing.two },
   track: { height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.2)' },
   fill: { height: 4, borderRadius: 2, backgroundColor: Colors.light.accentMint },
+  numberSmall: { fontSize: 40, lineHeight: 44 },
 });

@@ -2,8 +2,16 @@
 
 from __future__ import annotations
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _normalize_supabase_url(url: str) -> str:
+	"""Supabase Python client expects the project root URL, not /rest/v1."""
+	normalized = url.strip().rstrip("/")
+	if normalized.endswith("/rest/v1"):
+		normalized = normalized[: -len("/rest/v1")]
+	return normalized
 
 
 class Settings(BaseSettings):
@@ -15,8 +23,14 @@ class Settings(BaseSettings):
 
 	supabase_url: str
 	supabase_anon_key: str
+
+	@field_validator("supabase_url", mode="before")
+	@classmethod
+	def normalize_supabase_url(cls, value: str) -> str:
+		return _normalize_supabase_url(value)
 	supabase_service_role_key: str = Field(validation_alias="SUPABASE_SERVICE_ROLE_KEY")
 	gemini_api_key: str | None = None
+	gemini_model: str = "gemini-2.0-flash"
 	openai_api_key: str | None = None
 	firebase_credentials_json: str | None = None
 	google_tts_credentials_json: str | None = None
