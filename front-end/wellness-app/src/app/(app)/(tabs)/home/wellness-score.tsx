@@ -33,7 +33,7 @@ const COMPONENT_META: {
   {
     key: 'consistency_score',
     label: 'Consistency',
-    desc: 'How regularly you hit your daily wellness habits.',
+    desc: 'How regularly you hit your daily habits on BIRTU.',
   },
 ];
 
@@ -45,7 +45,7 @@ export default function WellnessScoreDetail() {
   if (loading && !wellnessScore) {
     return (
       <AppScreen>
-        <ScreenHeader title="Wellness score" showBack />
+        <ScreenHeader title="BIRTU score" showBack />
         <View style={styles.centered}>
           <ActivityIndicator color={Colors.light.primary} />
         </View>
@@ -55,7 +55,7 @@ export default function WellnessScoreDetail() {
 
   return (
     <AppScreen>
-      <ScreenHeader title="Wellness score" showBack />
+      <ScreenHeader title="BIRTU score" showBack />
       <AppText variant="caption" style={{ marginBottom: Spacing.four }}>
         Your score blends activity, sleep, and nutrition into one daily number (0–100).
       </AppText>

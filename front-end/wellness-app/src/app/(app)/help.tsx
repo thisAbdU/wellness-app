@@ -9,7 +9,7 @@ import { Colors, Spacing } from '@/constants/theme';
 const FAQ = [
   {
     q: 'How does Health Connect work?',
-    a: 'On Android, Wellness reads steps, sleep, and workouts synced to Health Connect from apps like Samsung Health or Garmin.',
+    a: 'On Android, BIRTU reads steps, sleep, and workouts synced to Health Connect from apps like Samsung Health or Garmin.',
   },
   {
     q: 'አማርኛን እንዴት እቀይራለሁ?',
@@ -31,7 +31,7 @@ export default function HelpScreen() {
       ))}
       <AppButton
         label="Contact support"
-        onPress={() => Linking.openURL('mailto:support@wellness.app?subject=Wellness%20Support')}
+        onPress={() => Linking.openURL('mailto:support@birtu.app?subject=BIRTU%20Support')}
         style={{ marginTop: Spacing.five }}
       />
     </AppScreen>

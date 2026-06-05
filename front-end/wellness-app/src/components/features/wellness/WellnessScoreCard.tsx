@@ -28,7 +28,7 @@ export function WellnessScoreCard({ score, change, message, onPress }: Props) {
   return (
     <Pressable onPress={onPress} style={styles.card}>
       <AppText variant="overline" style={styles.label}>
-        Wellness score
+        BIRTU score
       </AppText>
       <View style={styles.row}>
     <AppText style={[styles.number, small ? styles.numberSmall : null]}>{score}</AppText>

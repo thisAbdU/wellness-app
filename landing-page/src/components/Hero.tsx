@@ -15,7 +15,7 @@ export function Hero() {
             Now available on Android
           </p>
           <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-[3.25rem]">
-            Wellness that fits your life in{' '}
+            BIRTU fits your life in{' '}
             <span className="text-primary">Addis Ababa</span> and beyond
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
@@ -57,7 +57,7 @@ function PhoneMockup() {
       <div className="relative rounded-[2rem] border-8 border-foreground/90 bg-foreground p-2 shadow-2xl">
         <div className="overflow-hidden rounded-[1.4rem] bg-background">
           <div className="bg-primary px-4 py-6 text-white">
-            <p className="text-xs uppercase tracking-wider opacity-70">Wellness score</p>
+            <p className="text-xs uppercase tracking-wider opacity-70">BIRTU score</p>
             <p className="mt-1 text-5xl font-medium">82</p>
             <p className="mt-2 text-sm opacity-80">You are doing well. Keep the momentum.</p>
           </div>

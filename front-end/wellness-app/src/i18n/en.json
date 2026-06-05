@@ -4,8 +4,8 @@
     },
     "home": {
       "greeting": "Good morning",
-      "subtitle": "Your wellness overview is ready.",
-      "wellnessScore": "Wellness score",
+      "subtitle": "Your BIRTU overview is ready.",
+      "wellnessScore": "BIRTU score",
       "wellnessMessage": "You are doing well. Keep the momentum.",
       "quickActions": "Quick actions",
       "quickActionsSubtitle": "Start with the most important tasks",
@@ -17,7 +17,7 @@
       "fromLastWeek": "from last week"
     },
   "onboarding": {
-    "title": "Your calm companion for daily wellness",
+    "title": "Your calm companion — BIRTU",
     "subtitle": "Gentle tracking, mindful insights, and habits that fit your life",
     "getStarted": "Begin your journey",
     "continue": "Continue",
@@ -61,7 +61,7 @@
   },
   "auth": {
     "signInTitle": "Welcome back",
-    "signInSubtitle": "Pick up where you left off on your wellness journey",
+    "signInSubtitle": "Pick up where you left off on your BIRTU journey",
     "email": "Email",
     "password": "Password",
     "signIn": "Sign in",
@@ -72,8 +72,8 @@
     "phoneNumber": "Phone number",
     "sendCode": "Send code",
     "orContinueWith": "Or continue with",
-    "signUpTitle": "Start your wellness journey",
-    "signUpSubtitle": "Create a calm space to track habits, health, and growth",
+    "signUpTitle": "Start your BIRTU journey",
+    "signUpSubtitle": "Create a calm space to track habits, health, and growth with BIRTU",
     "createAccount": "Create account",
     "confirmPassword": "Confirm password",
     "alreadyHaveAccount": "Already have an account?",

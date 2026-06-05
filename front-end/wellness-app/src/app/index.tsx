@@ -3,6 +3,7 @@ import { Animated, StyleSheet, View } from 'react-native';
 import { replace } from '@/lib/router';
 import { AppText } from '@/components/ui/AppText';
 import { WellnessBackground } from '@/components/ui/WellnessBackground';
+import { BRAND_NAME, BRAND_TAGLINE } from '@/constants/brand';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -52,10 +53,10 @@ export default function SplashScreen() {
             </View>
           </View>
           <AppText variant="subtitle" style={styles.brand}>
-            Wellness
+            {BRAND_NAME}
           </AppText>
           <AppText variant="caption" align="center" style={styles.tagline}>
-            Your calm companion for a healthier daily rhythm
+            {BRAND_TAGLINE}
           </AppText>
         </Animated.View>
       </View>

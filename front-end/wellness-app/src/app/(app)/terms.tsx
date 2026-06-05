@@ -8,11 +8,11 @@ import { Spacing } from '@/constants/theme';
 const SECTIONS = [
   {
     title: 'Acceptance',
-    body: 'By using Wellness, you agree to these terms. If you do not agree, please discontinue use of the app.',
+    body: 'By using BIRTU, you agree to these terms. If you do not agree, please discontinue use of the app.',
   },
   {
     title: 'Health disclaimer',
-    body: 'Wellness provides general wellness guidance, not medical advice. Always consult a healthcare professional for medical decisions.',
+    body: 'BIRTU provides general wellness guidance, not medical advice. Always consult a healthcare professional for medical decisions.',
   },
   {
     title: 'Account responsibility',

@@ -151,7 +151,7 @@ def evaluate_burnout(user_id: str, *, send_notification: bool = True) -> dict[st
 	if send_notification:
 		send_push_to_user(
 			user_id,
-			title="Wellness check-in",
+			title="BIRTU check-in",
 			body=insight[:180],
 			data={"type": "BURNOUT_WARNING", "score": str(score)},
 		)

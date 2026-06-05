@@ -33,10 +33,10 @@ export default function ChallengeCompleted() {
       : (challenge.title ?? 'Challenge'));
 
   const handleShare = useCallback(async () => {
-    const name = title ?? 'my wellness challenge';
+    const name = title ?? 'my BIRTU challenge';
     const required = challenge?.progress_json?.required_days ?? challenge?.duration_days ?? '';
     await Share.share({
-      message: `I completed the "${name}" challenge (${required} days) on Wellness App! 🎉`,
+      message: `I completed the "${name}" challenge (${required} days) on BIRTU! 🎉`,
     });
   }, [title, challenge]);
 

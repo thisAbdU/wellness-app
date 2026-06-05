@@ -25,7 +25,7 @@ export default function ExportDataScreen() {
         insights,
       };
       const json = JSON.stringify(payload, null, 2);
-      await Share.share({ message: json, title: 'Wellness data export' });
+      await Share.share({ message: json, title: 'BIRTU data export' });
     } catch (e) {
       Alert.alert('Error', e instanceof Error ? e.message : 'Failed to export data');
     } finally {

@@ -5,7 +5,7 @@
     "home": {
       "greeting": "እንደምን አደሩ",
       "subtitle": "የዛሬ የጤና አጠቃላይ ሁኔታዎ ዝግጁ ነው።",
-      "wellnessScore": "የጤና ውጤት",
+      "wellnessScore": "የቢርቱ ውጤት",
       "wellnessMessage": "በጥሩ ሁኔታ እየተጓዙ ነው። ቀጥሉ።",
       "quickActions": "ፈጣን እርምጃዎች",
       "quickActionsSubtitle": "ከአስፈላጊው ጀምሩ",
@@ -73,7 +73,7 @@
     "sendCode": "ኮድ ላክ",
     "orContinueWith": "ወይም በዚህ ይቀጥሉ",
     "signUpTitle": "መለያ ይፍጠሩ",
-  "signUpSubtitle": "Wellnessን ይቀላቀሉ እና ቀንዎን መከታተል ይጀምሩ",
+  "signUpSubtitle": "BIRTUን ይቀላቀሉ እና ቀንዎን መከታተል ይጀምሩ",
   "createAccount": "መለያ ይፍጠሩ",
   "confirmPassword": "የይለፍ ቃል ያረጋግጡ",
   "alreadyHaveAccount": "አስቀድሞ መለያ አለዎት?",

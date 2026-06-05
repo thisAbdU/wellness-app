@@ -4,7 +4,7 @@ const STEPS = [
   {
     step: 1,
     title: 'Download the APK',
-    body: 'Tap the download button below to get the latest Android build. The file is named wellness-app.apk.',
+    body: 'Tap the download button below to get the latest Android build. The file is named birtu.apk.',
   },
   {
     step: 2,
@@ -43,7 +43,7 @@ export function InstallGuide() {
               Installation guide
             </h2>
             <p className="mt-4 text-lg text-muted">
-              Follow these steps to install the Wellness app on your Android phone. No Play Store
+              Follow these steps to install BIRTU on your Android phone. No Play Store
               required.
             </p>
 

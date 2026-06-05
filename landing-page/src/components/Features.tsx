@@ -1,7 +1,7 @@
 const FEATURES = [
   {
     icon: '📊',
-    title: 'Daily wellness score',
+    title: 'Daily BIRTU score',
     description:
       'One number that blends activity, sleep, recovery, and consistency — updated every sync.',
   },
@@ -44,7 +44,7 @@ export function Features() {
         <div className="max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">Features</p>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Everything you need for daily wellness
+            Everything you need for daily health with BIRTU
           </h2>
           <p className="mt-4 text-lg text-muted">
             Built for Ethiopian users — bilingual, offline-friendly, and designed for real devices.

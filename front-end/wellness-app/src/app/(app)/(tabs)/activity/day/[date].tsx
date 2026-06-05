@@ -85,7 +85,7 @@ export default function ActivityDayDetail() {
             ['Active min', data.active_minutes?.toString() ?? '—'],
             ['Calories', data.calories_burned != null ? `${data.calories_burned} kcal` : '—'],
             ['Workouts', data.workout_count?.toString() ?? '—'],
-            ['Wellness', data.wellness_score?.toString() ?? '—'],
+            ['BIRTU score', data.wellness_score?.toString() ?? '—'],
             [
               'Resting HR',
               data.resting_heart_rate != null ? `${data.resting_heart_rate} bpm` : '—',

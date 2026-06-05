@@ -191,7 +191,7 @@ select * from (values
     ('First 10K Steps', 'Walk 10,000 steps in a day', '👟', 'daily_steps', 10000),
     ('Week Warrior', '7-day activity streak', '🔥', 'streak_days', 7),
     ('Sleep Champion', '5-day sleep streak', '🌙', 'sleep_days', 5),
-    ('Wellness Star', '14-day wellness streak', '⭐', 'wellness_score_days', 14),
+    ('BIRTU Star', '14-day BIRTU score streak', '⭐', 'wellness_score_days', 14),
     ('Early Bird', 'Log morning activity', '🌅', 'early_activity', 1)
 ) as v(name, description, icon, condition_type, condition_value)
 where not exists (select 1 from public.badges limit 1);

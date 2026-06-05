@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
 	stop_scheduler()
 
 
-app = FastAPI(title="Wellness Tracker Backend", version="1.2.0", lifespan=lifespan)
+app = FastAPI(title="BIRTU Backend", version="1.2.0", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -52,7 +52,7 @@ app.include_router(leaderboards_router)
 
 @app.get("/")
 async def root() -> dict[str, str]:
-	return {"message": "Wellness Tracker Backend is running"}
+	return {"message": "BIRTU Backend is running"}
 
 
 @app.get("/health-check")
@@ -93,6 +93,6 @@ async def wellness_test_score(payload: HealthSyncRequest) -> dict[str, object]:
 
 	return {
 		"success": True,
-		"message": "Wellness score calculated successfully",
+		"message": "BIRTU score calculated successfully",
 		"data": score,
 	}

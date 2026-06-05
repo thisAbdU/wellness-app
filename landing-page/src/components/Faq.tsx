@@ -1,7 +1,7 @@
 const FAQ = [
   {
     q: 'Is the app free?',
-    a: 'Yes. Download and use core wellness features at no cost during the beta period.',
+    a: 'Yes. Download and use BIRTU core features at no cost during the beta period.',
   },
   {
     q: 'Does it work without internet?',

@@ -19,7 +19,7 @@ export function Footer() {
         </a>
       </div>
       <p className="mx-auto mt-8 max-w-6xl text-center text-xs text-muted">
-        © {new Date().getFullYear()} Wellness App. All rights reserved.
+        © {new Date().getFullYear()} BIRTU. All rights reserved.
       </p>
     </footer>
   );

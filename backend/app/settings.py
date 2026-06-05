@@ -36,7 +36,7 @@ class Settings(BaseSettings):
 	google_tts_credentials_json: str | None = None
 	africastalking_api_key: str | None = None
 	africastalking_username: str | None = None
-	africastalking_shortcode: str = "WELLNESS"
+	africastalking_shortcode: str = "BIRTU"
 	supabase_storage_bucket: str = "voice-responses"
 	enable_scheduler: bool = True
 	cors_origins: str = (

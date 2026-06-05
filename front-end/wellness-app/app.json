@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "wellness-app",
-    "slug": "wellness-app",
+    "name": "BIRTU",
+    "slug": "birtu",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "wellnessapp",
+    "scheme": "birtu",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
@@ -15,7 +15,7 @@
           "am"
         ]
       },
-      "bundleIdentifier": "com.anonymous.wellnessapp"
+      "bundleIdentifier": "com.birtu.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,7 +25,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.wellnessapp"
+      "package": "com.birtu.app"
     },
     "web": {
       "output": "static",
@@ -69,13 +69,13 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow Wellness to use your location for neighborhood leaderboards and emergency alerts."
+          "locationWhenInUsePermission": "Allow BIRTU to use your location for neighborhood leaderboards and emergency alerts."
         }
       ],
       [
         "expo-av",
         {
-          "microphonePermission": "Allow Wellness to record voice questions for your AI health coach."
+          "microphonePermission": "Allow BIRTU to record voice questions for your AI health coach."
         }
       ],
       "react-native-health-connect"

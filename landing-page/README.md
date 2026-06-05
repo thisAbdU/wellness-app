@@ -1,6 +1,6 @@
-# Wellness Landing Page
+# BIRTU Landing Page
 
-Promotional landing page for the Wellness mobile app. Built with **Next.js 15**, **Tailwind CSS 4**, and **pnpm**.
+Promotional landing page for the BIRTU mobile app. Built with **Next.js 15**, **Tailwind CSS 4**, and **pnpm**.
 
 ## Quick start
 
@@ -23,7 +23,7 @@ cp .env.example .env.local
 2. Set your hosted APK URL:
 
 ```env
-NEXT_PUBLIC_APK_DOWNLOAD_URL=https://your-cdn.com/wellness-app.apk
+NEXT_PUBLIC_APK_DOWNLOAD_URL=https://your-cdn.com/birtu.apk
 ```
 
 3. Restart the dev server (or rebuild for production).

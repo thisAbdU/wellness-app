@@ -95,7 +95,7 @@ export default function HomeDashboard() {
             {t('home.greeting')}, {firstName}
           </AppText>
           <AppText variant="caption" color={Colors.light.textSecondary}>
-            {profile?.city ?? 'Addis Ababa'} · Wellness dashboard
+            {profile?.city ?? 'Addis Ababa'} · BIRTU dashboard
           </AppText>
         </View>
       </View>
@@ -112,7 +112,7 @@ export default function HomeDashboard() {
         <View style={styles.connectCard}>
           <AppText variant="bodyStrong">Connect your health data</AppText>
           <AppText variant="caption" style={styles.connectCopy}>
-            Sync steps, sleep, and calories from Activity to unlock your wellness score and AI
+            Sync steps, sleep, and calories from Activity to unlock your BIRTU score and AI
             insights.
           </AppText>
           <AppButton

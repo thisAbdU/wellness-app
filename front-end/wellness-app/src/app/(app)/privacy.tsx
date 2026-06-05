@@ -8,7 +8,7 @@ import { Spacing } from '@/constants/theme';
 const SECTIONS = [
   {
     title: 'Data we collect',
-    body: 'We collect profile information, health metrics you sync from connected devices, and usage data to personalize your wellness experience.',
+    body: 'We collect profile information, health metrics you sync from connected devices, and usage data to personalize your BIRTU experience.',
   },
   {
     title: 'How we use it',

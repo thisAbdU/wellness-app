@@ -5,6 +5,7 @@ import { AppScreen } from '@/components/ui/AppScreen';
 import { AppText } from '@/components/ui/AppText';
 import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { SettingsRow } from '@/components/features/profile/SettingsRow';
+import { BRAND_NAME } from '@/constants/brand';
 import { Spacing } from '@/constants/theme';
 import { navigate } from '@/lib/router';
 
@@ -16,7 +17,7 @@ export default function AboutScreen() {
     <AppScreen>
       <ScreenHeader title="About" showBack />
       <View style={styles.hero}>
-        <AppText variant="title">Wellness</AppText>
+        <AppText variant="title">{BRAND_NAME}</AppText>
         <AppText variant="caption">
           v{version} (build {build})
         </AppText>
