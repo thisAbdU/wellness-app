@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AuthCardLayout } from '@/components/ui/AuthCardLayout';
 import { AppButton } from '@/components/ui/AppButton';
@@ -7,21 +7,35 @@ import { AppText } from '@/components/ui/AppText';
 import { AuthHeader } from '@/components/auth/AuthHeader';
 import { AuthTextField } from '@/components/auth/AuthTextField';
 import { AuthLinkRow } from '@/components/auth/AuthLinkRow';
-import { Colors, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
 import { i18n } from '@/i18n';
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
+  const { resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async () => {
+    if (!email.trim()) return;
+    setLoading(true);
+    try {
+      await resetPassword(email.trim());
+      setSent(true);
+    } catch (e) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Failed to send reset link');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AuthCardLayout>
       <AuthHeader
         title={i18n.t('auth.resetPasswordTitle')}
-        subtitle={
-          sent ? 'Check your inbox' : i18n.t('auth.resetPasswordSubtitle')
-        }
+        subtitle={sent ? 'Check your inbox' : i18n.t('auth.resetPasswordSubtitle')}
       />
       {sent ? (
         <View style={styles.confirm}>
@@ -40,7 +54,7 @@ export default function ResetPasswordScreen() {
             value={email}
             onChangeText={setEmail}
           />
-          <AppButton label={i18n.t('auth.sendResetLink')} onPress={() => setSent(true)} />
+          <AppButton label={i18n.t('auth.sendResetLink')} onPress={handleSend} loading={loading} />
           <AuthLinkRow
             label={i18n.t('auth.backTo')}
             actionLabel={i18n.t('auth.signIn')}

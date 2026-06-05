@@ -1,14 +1,52 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { navigate, replace } from '@/lib/router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Share, StyleSheet, View } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { navigate } from '@/lib/router';
 import { AppScreen } from '@/components/ui/AppScreen';
 import { AppText } from '@/components/ui/AppText';
 import { AppButton } from '@/components/ui/AppButton';
 import { Colors, Spacing } from '@/constants/theme';
+import { api } from '@/lib/api';
+import type { Challenge } from '@/lib/api/types';
+import { useLocalization } from '@/hooks/useLocalization';
 
 export default function ChallengeCompleted() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { locale } = useLocalization();
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    api.challenges
+      .progress(id)
+      .then(setChallenge)
+      .catch(() => setChallenge(null))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const title =
+    challenge &&
+    (locale === 'am' && challenge.title_am
+      ? challenge.title_am
+      : (challenge.title ?? 'Challenge'));
+
+  const handleShare = useCallback(async () => {
+    const name = title ?? 'my wellness challenge';
+    const required = challenge?.progress_json?.required_days ?? challenge?.duration_days ?? '';
+    await Share.share({
+      message: `I completed the "${name}" challenge (${required} days) on Wellness App! 🎉`,
+    });
+  }, [title, challenge]);
+
+  if (loading) {
+    return (
+      <AppScreen scrollable={false} style={styles.wrap}>
+        <ActivityIndicator color={Colors.light.primary} />
+      </AppScreen>
+    );
+  }
 
   return (
     <AppScreen scrollable={false} style={styles.wrap}>
@@ -17,12 +55,12 @@ export default function ChallengeCompleted() {
         Challenge complete!
       </AppText>
       <AppText variant="caption" align="center" style={{ marginTop: Spacing.two }}>
-        You earned the Step Master badge
+        {title ? `You finished "${title}"` : 'Great work — badge unlocked!'}
       </AppText>
       <View style={styles.badge}>
         <AppText style={{ fontSize: 64 }}>🏅</AppText>
       </View>
-      <AppButton label="Share achievement" variant="secondary" onPress={() => {}} />
+      <AppButton label="Share achievement" variant="secondary" onPress={handleShare} />
       <AppButton
         label="View badge in collection"
         onPress={() => navigate('/(app)/profile/badges')}

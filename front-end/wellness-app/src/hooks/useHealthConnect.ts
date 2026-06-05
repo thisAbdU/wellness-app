@@ -13,15 +13,44 @@ export type HealthData = {
   workoutCount: number | null;
 };
 
+export type WorkoutSummary = {
+  id: string;
+  type: string;
+  durationMin: number;
+  calories: number | null;
+  source: string;
+  startTime: string;
+  endTime: string;
+};
+
 export type DataSource = 'health_connect' | 'none';
 export type ConnectionStatus = 'idle' | 'connecting' | 'connected' | 'unavailable' | 'error';
 
 export type HealthState = {
   status: ConnectionStatus;
   data: HealthData;
+  workouts: WorkoutSummary[];
   source: DataSource;
   hasAnyData: boolean;
 };
+
+function formatExerciseType(exerciseType?: number, title?: string): string {
+  if (title) return title;
+  const names: Record<number, string> = {
+    8: 'Cycling',
+    56: 'Running',
+    57: 'Running',
+    79: 'Walking',
+    82: 'Swimming',
+  };
+  return names[exerciseType ?? 0] ?? 'Workout';
+}
+
+function formatDataOrigin(origin?: string): string {
+  if (!origin) return 'Health Connect';
+  const pkg = origin.split('.').pop() ?? origin;
+  return pkg.charAt(0).toUpperCase() + pkg.slice(1);
+}
 
 const EMPTY: HealthData = {
   steps: null,
@@ -33,6 +62,7 @@ const EMPTY: HealthData = {
 const UNAVAILABLE_STATE: HealthState = {
   status: 'unavailable',
   data: EMPTY,
+  workouts: [],
   source: 'none',
   hasAnyData: false,
 };
@@ -40,6 +70,7 @@ const UNAVAILABLE_STATE: HealthState = {
 const ERROR_STATE: HealthState = {
   status: 'error',
   data: EMPTY,
+  workouts: [],
   source: 'none',
   hasAnyData: false,
 };
@@ -48,6 +79,7 @@ export function useHealthConnect(): HealthState {
   const [state, setState] = useState<HealthState>({
     status: 'idle',
     data: EMPTY,
+    workouts: [],
     source: 'none',
     hasAnyData: false,
   });
@@ -131,14 +163,40 @@ export function useHealthConnect(): HealthState {
             ? Math.round(allSamples.reduce((s, x) => s + x.beatsPerMinute, 0) / allSamples.length)
             : null;
 
-        const workoutCount = workoutRes.records.length;
+        const workouts = workoutRes.records.map((r, i) => {
+          const rec = r as {
+            startTime: string;
+            endTime: string;
+            exerciseType?: number;
+            title?: string;
+            metadata?: { id?: string; dataOrigin?: string };
+          };
+          const durationMin = Math.max(
+            1,
+            Math.round(
+              (new Date(rec.endTime).getTime() - new Date(rec.startTime).getTime()) / 60_000,
+            ),
+          );
+          return {
+            id: rec.metadata?.id ?? `workout-${i}`,
+            type: formatExerciseType(rec.exerciseType, rec.title),
+            durationMin,
+            calories: durationMin * 8,
+            source: formatDataOrigin(rec.metadata?.dataOrigin),
+            startTime: rec.startTime,
+            endTime: rec.endTime,
+          };
+        });
 
-        const hasAnyData = steps > 0 || sleepMs > 0 || allSamples.length > 0;
+        const workoutCount = workouts.length;
+        const hasAnyData =
+          steps > 0 || sleepMs > 0 || allSamples.length > 0 || workoutCount > 0;
 
         setState({
           status: 'connected',
           source: 'health_connect',
           hasAnyData,
+          workouts,
           data: {
             steps: steps || null,
             sleepHours,

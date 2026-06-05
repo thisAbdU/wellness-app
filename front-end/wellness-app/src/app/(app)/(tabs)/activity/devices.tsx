@@ -1,29 +1,31 @@
-import React, { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React from 'react';
+import { Linking, Platform, StyleSheet, View } from 'react-native';
 import { AppScreen } from '@/components/ui/AppScreen';
 import { AppText } from '@/components/ui/AppText';
 import { AppCard } from '@/components/ui/AppCard';
 import { AppButton } from '@/components/ui/AppButton';
 import { ScreenHeader } from '@/components/navigation/ScreenHeader';
-import { Spacing } from '@/constants/theme';
-import { MOCK_DEVICES } from '@/constants/mockData';
+import { Colors, Spacing } from '@/constants/theme';
+import { useHealthConnect } from '@/hooks/useHealthConnect';
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case 'connected':
+      return 'Connected';
+    case 'connecting':
+      return 'Connecting…';
+    case 'unavailable':
+      return 'Unavailable';
+    case 'error':
+      return 'Error';
+    default:
+      return 'Checking…';
+  }
+}
 
 export default function DeviceConnections() {
-  const [devices, setDevices] = useState(MOCK_DEVICES);
-
-  const toggle = (id: string) => {
-    setDevices((d) =>
-      d.map((dev) =>
-        dev.id === id
-          ? {
-              ...dev,
-              connected: !dev.connected,
-              lastSync: !dev.connected ? 'Just now' : '—',
-            }
-          : dev,
-      ),
-    );
-  };
+  const { status, source, hasAnyData, data } = useHealthConnect();
+  const connected = status === 'connected';
 
   return (
     <AppScreen>
@@ -31,20 +33,48 @@ export default function DeviceConnections() {
       <AppText variant="caption" style={{ marginBottom: Spacing.four }}>
         On Android, Garmin, Fitbit, Xiaomi, and Samsung route through Health Connect.
       </AppText>
-      {devices.map((d) => (
-        <AppCard key={d.id} style={styles.card}>
-          <View style={styles.row}>
-            <AppText variant="bodyStrong">{d.name}</AppText>
-            <AppText variant="caption">{d.connected ? 'Connected' : 'Not connected'}</AppText>
-          </View>
-          <AppText variant="caption">Last sync: {d.lastSync}</AppText>
+      <AppCard style={styles.card}>
+        <View style={styles.row}>
+          <AppText variant="bodyStrong">Health Connect</AppText>
+          <AppText
+            variant="caption"
+            color={connected ? Colors.light.primary : Colors.light.textSecondary}
+          >
+            {statusLabel(status)}
+          </AppText>
+        </View>
+        <AppText variant="caption">
+          Source: {source === 'health_connect' ? 'Health Connect' : 'None'}
+        </AppText>
+        {connected ? (
+          <AppText variant="caption">
+            Today: {data.steps?.toLocaleString() ?? '—'} steps ·{' '}
+            {data.workoutCount ?? 0} workouts
+            {hasAnyData ? '' : ' (no data yet)'}
+          </AppText>
+        ) : (
+          <AppText variant="caption" color={Colors.light.textSecondary}>
+            Install Health Connect and grant permissions to sync wearable data.
+          </AppText>
+        )}
+        {status === 'unavailable' && Platform.OS === 'android' ? (
           <AppButton
-            label={d.connected ? 'Disconnect' : 'Connect'}
-            variant={d.connected ? 'ghost' : 'primary'}
-            onPress={() => toggle(d.id)}
+            label="Install Health Connect"
+            onPress={() =>
+              Linking.openURL(
+                'https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata',
+              )
+            }
           />
-        </AppCard>
-      ))}
+        ) : null}
+      </AppCard>
+      <AppCard style={styles.card}>
+        <AppText variant="bodyStrong">Supported wearables</AppText>
+        <AppText variant="caption">
+          Garmin, Fitbit, Xiaomi, and Samsung Health sync via Health Connect on Android. Connect
+          your device in the Health Connect app, then return here.
+        </AppText>
+      </AppCard>
     </AppScreen>
   );
 }

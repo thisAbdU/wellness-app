@@ -1,11 +1,10 @@
-import React from 'react';
-import { ScrollView, StyleSheet, View, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, View, Pressable, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { MOCK_USER } from '@/constants/mockData';
-import { signOut } from '@/lib/appState';
+import { useAuth } from '@/contexts/AuthContext';
 import { navigate as goTo, replace } from '@/lib/router';
 
 const DRAWER_ITEMS = [
@@ -26,10 +25,31 @@ type DrawerContentProps = {
 
 export function AppDrawerContent({ navigation }: DrawerContentProps) {
   const insets = useSafeAreaInsets();
+  const { profile, signOut } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const displayName = profile?.full_name ?? 'User';
+  const initials = displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   const openRoute = (route: string) => {
     navigation.closeDrawer();
     goTo(route);
+  };
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await signOut();
+      navigation.closeDrawer();
+      replace('/(auth)/sign-in');
+    } catch {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -40,15 +60,11 @@ export function AppDrawerContent({ navigation }: DrawerContentProps) {
       <View style={styles.header}>
         <View style={styles.avatar}>
           <AppText variant="subtitle" color={Colors.light.primary}>
-            {MOCK_USER.name
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .slice(0, 2)}
+            {initials}
           </AppText>
         </View>
-        <AppText variant="bodyStrong">{MOCK_USER.name}</AppText>
-        <AppText variant="caption">{MOCK_USER.city}</AppText>
+        <AppText variant="bodyStrong">{displayName}</AppText>
+        <AppText variant="caption">{profile?.city ?? ''}</AppText>
       </View>
 
       <View style={styles.menu}>
@@ -75,15 +91,16 @@ export function AppDrawerContent({ navigation }: DrawerContentProps) {
 
       <Pressable
         style={styles.logout}
-        onPress={() => {
-          signOut();
-          navigation.closeDrawer();
-          replace('/(auth)/sign-in');
-        }}
+        onPress={handleLogout}
+        disabled={loggingOut}
       >
-        <AppText variant="bodyStrong" color={Colors.light.error}>
-          Logout
-        </AppText>
+        {loggingOut ? (
+          <ActivityIndicator color={Colors.light.error} />
+        ) : (
+          <AppText variant="bodyStrong" color={Colors.light.error}>
+            Logout
+          </AppText>
+        )}
       </Pressable>
     </ScrollView>
   );

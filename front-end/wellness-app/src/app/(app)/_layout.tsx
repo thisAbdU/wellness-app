@@ -2,11 +2,13 @@ import { Drawer } from 'expo-router/drawer';
 import { View, StyleSheet } from 'react-native';
 import { AppDrawerContent } from '@/components/navigation/AppDrawerContent';
 import { OfflineBanner } from '@/components/navigation/OfflineBanner';
+import { HealthSyncBoot } from '@/components/HealthSyncBoot';
 import { Colors } from '@/constants/theme';
 
 export default function AppDrawerLayout() {
   return (
     <View style={styles.wrap}>
+      <HealthSyncBoot />
       <OfflineBanner />
       <Drawer
         drawerContent={(props) => <AppDrawerContent {...props} />}
@@ -31,6 +33,8 @@ export default function AppDrawerLayout() {
         />
         <Drawer.Screen name="help" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="about" options={{ drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name="privacy" options={{ drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name="terms" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="sos" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="health-alert" options={{ drawerItemStyle: { display: 'none' } }} />
         <Drawer.Screen name="fall-detection" options={{ drawerItemStyle: { display: 'none' } }} />

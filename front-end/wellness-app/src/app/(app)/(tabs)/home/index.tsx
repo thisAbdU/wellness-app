@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
 import * as Localization from 'expo-localization';
 import { navigate } from '@/lib/router';
 import { AppScreen } from '@/components/ui/AppScreen';
@@ -10,11 +10,23 @@ import { WellnessScoreCard } from '@/components/features/wellness/WellnessScoreC
 import { TodaySummary } from '@/components/features/wellness/TodaySummary';
 import { QuickActionGrid } from '@/components/features/wellness/QuickActionGrid';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { MOCK_USER } from '@/constants/mockData';
-import { useHealthConnect } from '@/hooks/useHealthConnect';
-import { i18n } from '@/i18n';
+import { useDashboard } from '@/hooks/useDashboard';
+import { useLocalization } from '@/hooks/useLocalization';
 
 export default function HomeDashboard() {
+  const { t } = useLocalization();
+  const {
+    profile,
+    health,
+    wellnessScore,
+    wellnessStreak,
+    insight,
+    calories,
+    loading,
+    error,
+    refresh,
+  } = useDashboard();
+
   let locale = Localization.getLocales()[0]?.languageTag ?? 'en';
   if (locale !== 'en' && locale !== 'am') locale = 'am';
   const today = new Intl.DateTimeFormat(locale, {
@@ -23,26 +35,48 @@ export default function HomeDashboard() {
     day: 'numeric',
   }).format(new Date());
 
-  const { data } = useHealthConnect();
-  const steps = data.steps ?? 8432;
-  const sleepHours = data.sleepHours ?? 7.2;
-  const sleepLabel = `${Math.floor(sleepHours)}h ${Math.round((sleepHours % 1) * 60)}m`;
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'there';
+  const steps = health.data.steps ?? 0;
+  const sleepHours = health.data.sleepHours ?? 0;
+  const sleepLabel =
+    sleepHours > 0
+      ? `${Math.floor(sleepHours)}h ${Math.round((sleepHours % 1) * 60)}m`
+      : '—';
+  const score = wellnessScore?.total_score ?? 0;
+
+  if (loading && !wellnessScore && !profile) {
+    return (
+      <AppScreen>
+        <ScreenHeader showMenu />
+        <View style={styles.centered}>
+          <ActivityIndicator color={Colors.light.primary} />
+        </View>
+      </AppScreen>
+    );
+  }
 
   return (
     <AppScreen>
       <ScreenHeader showMenu />
       <AppText variant="overline">{today}</AppText>
       <AppText variant="title">
-        {i18n.t('home.greeting')}, {MOCK_USER.name.split(' ')[0]}
+        {t('home.greeting')}, {firstName}
       </AppText>
       <AppText variant="caption" style={{ marginBottom: Spacing.three }}>
-        {MOCK_USER.city}
+        {profile?.city ?? '—'}
       </AppText>
 
+      {error ? (
+        <TouchableOpacity style={styles.errorBanner} onPress={refresh}>
+          <AppText variant="caption" color={Colors.light.error}>
+            {error} — Tap to retry
+          </AppText>
+        </TouchableOpacity>
+      ) : null}
+
       <WellnessScoreCard
-        score={MOCK_USER.wellnessScore}
-        change={`↑ +4 ${i18n.t('home.fromLastWeek')}`}
-        message={i18n.t('home.wellnessMessage')}
+        score={score}
+        message={t('home.wellnessMessage')}
         onPress={() => navigate('/(app)/(tabs)/home/wellness-score')}
       />
 
@@ -50,10 +84,10 @@ export default function HomeDashboard() {
         metrics={[
           {
             icon: '👟',
-            value: steps.toLocaleString(),
+            value: steps > 0 ? steps.toLocaleString() : '—',
             label: 'Steps',
-            trend: '12% vs yesterday',
-            trendUp: true,
+            trend: health.hasAnyData ? 'From Health Connect' : 'No device data',
+            trendUp: health.hasAnyData,
             accentBg: '#E8F4EE',
             accentColor: Colors.light.tint,
           },
@@ -61,17 +95,17 @@ export default function HomeDashboard() {
             icon: '🌙',
             value: sleepLabel,
             label: 'Sleep',
-            trend: '18min more',
-            trendUp: true,
+            trend: health.hasAnyData ? 'Last night' : 'No device data',
+            trendUp: sleepHours > 0,
             accentBg: '#EEF0FA',
             accentColor: Colors.light.accentPurple,
           },
           {
             icon: '🔥',
-            value: '420',
+            value: calories > 0 ? String(calories) : '—',
             label: 'Calories',
-            trend: 'on track',
-            trendUp: true,
+            trend: calories > 0 ? 'burned today' : 'Sync to update',
+            trendUp: calories > 0,
             accentBg: '#FDF5E0',
             accentColor: Colors.light.warning,
           },
@@ -87,7 +121,7 @@ export default function HomeDashboard() {
         </View>
         <AppText variant="bodyStrong">Today&apos;s insight</AppText>
         <AppText variant="caption" style={{ marginTop: Spacing.one }}>
-          Your sleep improved after workout days. Tap to expand and listen.
+          {insight ?? 'Tap to get your personalized daily nudge.'}
         </AppText>
       </TouchableOpacity>
 
@@ -95,7 +129,7 @@ export default function HomeDashboard() {
         style={styles.streakRow}
         onPress={() => navigate('/(app)/(tabs)/home/streak')}
       >
-        <AppBadge label={`🔥 ${MOCK_USER.streak} day streak`} />
+        <AppBadge label={`🔥 ${wellnessStreak} day streak`} />
         <AppText variant="link">View milestones →</AppText>
       </TouchableOpacity>
 
@@ -118,7 +152,7 @@ export default function HomeDashboard() {
           {
             icon: '🥗',
             title: 'Log meal',
-            subtitle: 'Today\'s plan',
+            subtitle: "Today's plan",
             bg: '#FDF5E0',
             onPress: () => navigate('/(app)/(tabs)/nutrition'),
           },
@@ -128,19 +162,44 @@ export default function HomeDashboard() {
       <AppText variant="overline" style={{ marginBottom: Spacing.two }}>
         Recent activity
       </AppText>
-      {['Morning walk — 4,200 steps', 'Sleep — 7h 12m', 'Resting HR — 68 bpm'].map(
-        (entry) => (
-          <View key={entry} style={styles.feedItem}>
-            <AppText variant="bodyStrong">{entry}</AppText>
-            <AppText variant="caption">Health Connect</AppText>
-          </View>
-        ),
+      {health.hasAnyData ? (
+        [
+          steps > 0 ? `Steps — ${steps.toLocaleString()}` : null,
+          sleepHours > 0 ? `Sleep — ${sleepLabel}` : null,
+          health.data.avgHeartRate
+            ? `Resting HR — ${Math.round(health.data.avgHeartRate)} bpm`
+            : null,
+        ]
+          .filter(Boolean)
+          .map((entry) => (
+            <View key={entry as string} style={styles.feedItem}>
+              <AppText variant="bodyStrong">{entry}</AppText>
+              <AppText variant="caption">Health Connect</AppText>
+            </View>
+          ))
+      ) : (
+        <View style={styles.feedItem}>
+          <AppText variant="bodyStrong">No recent health data</AppText>
+          <AppText variant="caption">Connect a device in Activity</AppText>
+        </View>
       )}
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.five,
+  },
+  errorBanner: {
+    marginBottom: Spacing.three,
+    padding: Spacing.two,
+    backgroundColor: '#FDEDED',
+    borderRadius: 8,
+  },
   aiCard: {
     backgroundColor: Colors.light.backgroundElement,
     borderRadius: Radius.lg,

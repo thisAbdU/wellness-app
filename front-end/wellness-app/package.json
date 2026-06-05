@@ -5,9 +5,11 @@
   "dependencies": {
     "@expo/ui": "~56.0.15",
     "@nozbe/watermelondb": "^0.28.0",
+    "@react-native-async-storage/async-storage": "^3.1.1",
     "@react-native-community/netinfo": "12.0.1",
     "@supabase/supabase-js": "^2.107.0",
     "expo": "~56.0.8",
+    "expo-av": "^16.0.8",
     "expo-constants": "~56.0.16",
     "expo-device": "~56.0.4",
     "expo-font": "~56.0.5",
@@ -15,7 +17,11 @@
     "expo-image": "~56.0.9",
     "expo-linking": "~56.0.13",
     "expo-localization": "~56.0.6",
+    "expo-location": "^56.0.15",
+    "expo-notifications": "^56.0.15",
     "expo-router": "~56.2.8",
+    "expo-secure-store": "^56.0.4",
+    "expo-sensors": "^56.0.5",
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
     "expo-symbols": "~56.0.5",
@@ -50,5 +56,5 @@
     "lint": "expo lint"
   },
   "private": true,
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "pnpm@10.23.0"
 }

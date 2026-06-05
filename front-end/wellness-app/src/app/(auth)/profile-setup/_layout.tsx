@@ -1,5 +1,10 @@
 import { Stack } from 'expo-router';
+import { ProfileSetupProvider } from '@/contexts/ProfileSetupContext';
 
 export default function ProfileSetupLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <ProfileSetupProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </ProfileSetupProvider>
+  );
 }

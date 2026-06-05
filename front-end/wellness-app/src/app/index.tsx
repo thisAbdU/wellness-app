@@ -1,14 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { replace } from '@/lib/router';
 import { AppText } from '@/components/ui/AppText';
 import { WellnessBackground } from '@/components/ui/WellnessBackground';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { getInitialRoute } from '@/lib/appState';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SplashScreen() {
-  const router = useRouter();
+  const { isLoading, getInitialRoute } = useAuth();
   const scale = useRef(new Animated.Value(0.85)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const breathe = useRef(new Animated.Value(1)).current;
@@ -25,13 +24,15 @@ export default function SplashScreen() {
         Animated.timing(breathe, { toValue: 1, duration: 2200, useNativeDriver: true }),
       ]),
     ).start();
+  }, [breathe, opacity, scale]);
 
+  useEffect(() => {
+    if (isLoading) return;
     const timer = setTimeout(() => {
       replace(getInitialRoute());
-    }, 2200);
-
+    }, 1800);
     return () => clearTimeout(timer);
-  }, [breathe, opacity, router, scale]);
+  }, [isLoading, getInitialRoute]);
 
   return (
     <WellnessBackground variant="splash">

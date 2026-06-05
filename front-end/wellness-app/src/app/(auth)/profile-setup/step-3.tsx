@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { navigate, replace } from '@/lib/router';
+import { navigate } from '@/lib/router';
 import { AuthCardLayout } from '@/components/ui/AuthCardLayout';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppText } from '@/components/ui/AppText';
 import { AuthHeader } from '@/components/auth/AuthHeader';
 import { Colors, Spacing } from '@/constants/theme';
+import { useProfileSetup } from '@/contexts/ProfileSetupContext';
 
 const GOALS = [
   'Lose Weight',
@@ -17,8 +17,13 @@ const GOALS = [
 ];
 
 export default function ProfileStep3() {
-  const router = useRouter();
-  const [goal, setGoal] = useState('General Wellness');
+  const { data, update } = useProfileSetup();
+  const [goal, setGoal] = useState(data.fitnessGoal);
+
+  const continueNext = () => {
+    update({ fitnessGoal: goal });
+    navigate('/(auth)/profile-setup/step-4');
+  };
 
   return (
     <AuthCardLayout>
@@ -34,7 +39,7 @@ export default function ProfileStep3() {
           </Pressable>
         ))}
       </View>
-      <AppButton label="Continue" onPress={() => navigate('/(auth)/profile-setup/step-4')} />
+      <AppButton label="Continue" onPress={continueNext} />
     </AuthCardLayout>
   );
 }

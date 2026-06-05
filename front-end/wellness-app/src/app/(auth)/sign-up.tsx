@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { navigate, replace } from '@/lib/router';
 import { AuthCardLayout } from '@/components/ui/AuthCardLayout';
 import { AppButton } from '@/components/ui/AppButton';
@@ -9,15 +8,36 @@ import { AuthHeader } from '@/components/auth/AuthHeader';
 import { AuthTextField } from '@/components/auth/AuthTextField';
 import { AuthLinkRow } from '@/components/auth/AuthLinkRow';
 import { Colors, Spacing } from '@/constants/theme';
-import { markAuthenticated } from '@/lib/appState';
+import { useAuth } from '@/contexts/AuthContext';
 import { i18n } from '@/i18n';
 
 export default function SignUpScreen() {
-  const router = useRouter();
+  const { signUp } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [terms, setTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert('Passwords do not match');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('Password must be at least 6 characters');
+      return;
+    }
+    setLoading(true);
+    try {
+      await signUp(email.trim(), password);
+      replace('/(auth)/profile-setup/step-1');
+    } catch (e) {
+      Alert.alert('Sign up failed', e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AuthCardLayout>
@@ -55,10 +75,8 @@ export default function SignUpScreen() {
       <AppButton
         label={i18n.t('auth.createAccount')}
         disabled={!terms}
-        onPress={() => {
-          markAuthenticated();
-          replace('/(auth)/profile-setup/step-1');
-        }}
+        loading={loading}
+        onPress={handleSignUp}
       />
       <AuthLinkRow
         label={i18n.t('auth.alreadyHaveAccount')}

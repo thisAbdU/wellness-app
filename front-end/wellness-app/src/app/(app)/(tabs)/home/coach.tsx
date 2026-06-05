@@ -1,16 +1,83 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { navigate, replace } from '@/lib/router';
+import { Audio } from 'expo-av';
+import { navigate } from '@/lib/router';
 import { AppScreen } from '@/components/ui/AppScreen';
 import { AppText } from '@/components/ui/AppText';
 import { AppButton } from '@/components/ui/AppButton';
 import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { Colors, Radius, Spacing } from '@/constants/theme';
+import { api } from '@/lib/api';
+
+type InsightResponse = {
+  insight_type: string;
+  insight: string;
+  audio_url?: string | null;
+  tts_available?: boolean;
+};
 
 export default function CoachExpanded() {
-  const router = useRouter();
+  const [insight, setInsight] = useState<InsightResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const soundRef = useRef<Audio.Sound | null>(null);
+
+  const loadInsight = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api.coach.insight('DAILY_NUDGE');
+      setInsight(data as InsightResponse);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load insight');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadInsight();
+    return () => {
+      soundRef.current?.unloadAsync();
+    };
+  }, [loadInsight]);
+
+  const togglePlayback = async () => {
+    const audioUrl = insight?.audio_url;
+    if (!audioUrl) return;
+
+    try {
+      if (playing && soundRef.current) {
+        await soundRef.current.pauseAsync();
+        setPlaying(false);
+        return;
+      }
+
+      setAudioLoading(true);
+      if (soundRef.current) {
+        await soundRef.current.unloadAsync();
+        soundRef.current = null;
+      }
+
+      const { sound } = await Audio.Sound.createAsync({ uri: audioUrl });
+      soundRef.current = sound;
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setPlaying(false);
+        }
+      });
+      await sound.playAsync();
+      setPlaying(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to play audio');
+    } finally {
+      setAudioLoading(false);
+    }
+  };
+
+  const hasAudio = Boolean(insight?.audio_url);
 
   return (
     <AppScreen>
@@ -19,17 +86,41 @@ export default function CoachExpanded() {
         <AppText variant="overline" color={Colors.light.primary}>
           Today&apos;s insight
         </AppText>
-        <AppText variant="body" style={{ marginTop: Spacing.three, lineHeight: 24 }}>
-          Your sleep improved on days you logged evening walks. Consider a 20-minute walk
-          after dinner this week — it may help recovery without raising evening stress.
-        </AppText>
+        {loading ? (
+          <AppText variant="caption" style={{ marginTop: Spacing.three }}>
+            Loading your daily nudge…
+          </AppText>
+        ) : error ? (
+          <AppText variant="caption" color={Colors.light.error} style={{ marginTop: Spacing.three }}>
+            {error}
+          </AppText>
+        ) : (
+          <AppText variant="body" style={{ marginTop: Spacing.three, lineHeight: 24 }}>
+            {insight?.insight ?? 'No insight available yet. Check back after syncing health data.'}
+          </AppText>
+        )}
       </View>
-      <AppButton
-        label={playing ? 'Pause voice' : '▶ Play insight (TTS)'}
-        variant="secondary"
-        onPress={() => setPlaying(!playing)}
-        style={{ marginBottom: Spacing.three }}
-      />
+
+      {error && !loading ? (
+        <AppButton
+          label="Retry"
+          variant="ghost"
+          onPress={loadInsight}
+          loading={loading}
+          style={{ marginBottom: Spacing.three }}
+        />
+      ) : null}
+
+      {hasAudio ? (
+        <AppButton
+          label={playing ? 'Pause voice' : '▶ Play insight (TTS)'}
+          variant="secondary"
+          onPress={togglePlayback}
+          loading={audioLoading}
+          style={{ marginBottom: Spacing.three }}
+        />
+      ) : null}
+
       <AppButton
         label="More insights"
         variant="ghost"

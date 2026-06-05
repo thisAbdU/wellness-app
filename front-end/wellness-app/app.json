@@ -33,6 +33,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
       [
         "expo-splash-screen",
         {
@@ -57,7 +58,27 @@
             ]
           }
         }
-      ]
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#2F6B4E"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Wellness to use your location for neighborhood leaderboards and emergency alerts."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Wellness to record voice questions for your AI health coach."
+        }
+      ],
+      "react-native-health-connect"
     ],
     "experiments": {
       "typedRoutes": true,

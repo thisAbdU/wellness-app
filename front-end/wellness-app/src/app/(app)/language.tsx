@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AppScreen } from '@/components/ui/AppScreen';
 import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { LanguagePicker } from '@/components/features/onboarding/LanguagePicker';
+import { useLocalization } from '@/hooks/useLocalization';
 
 export default function LanguageSettings() {
-  const [lang, setLang] = useState<'en' | 'am'>('en');
+  const { locale, setAppLocale } = useLocalization();
 
   return (
     <AppScreen>
       <ScreenHeader title="Language" showBack />
-      <LanguagePicker value={lang} onChange={setLang} />
+      <LanguagePicker value={locale} onChange={setAppLocale} />
     </AppScreen>
   );
 }

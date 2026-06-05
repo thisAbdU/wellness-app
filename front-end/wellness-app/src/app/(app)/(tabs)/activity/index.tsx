@@ -1,6 +1,5 @@
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { navigate, replace } from '@/lib/router';
 import { AppScreen } from '@/components/ui/AppScreen';
 import { AppText } from '@/components/ui/AppText';
@@ -8,13 +7,35 @@ import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { ProgressRing } from '@/components/ui/ProgressRing';
 import { AppCard } from '@/components/ui/AppCard';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { MOCK_WORKOUTS } from '@/constants/mockData';
 import { useHealthConnect } from '@/hooks/useHealthConnect';
 
 export default function ActivityToday() {
-  const router = useRouter();
-  const { data } = useHealthConnect();
-  const steps = data.steps ?? 8432;
+  const { status, data, workouts } = useHealthConnect();
+  const steps = data.steps ?? 0;
+  const distanceKm =
+    data.steps != null ? (Math.round(data.steps * 0.0008 * 10) / 10).toFixed(1) : '—';
+
+  useEffect(() => {
+    if (status === 'unavailable') {
+      replace('/(app)/(tabs)/activity/no-device');
+    }
+  }, [status]);
+
+  if (status === 'idle' || status === 'connecting') {
+    return (
+      <AppScreen>
+        <ScreenHeader title="Activity" showMenu />
+        <View style={styles.loading}>
+          <ActivityIndicator color={Colors.light.primary} />
+          <AppText variant="caption">Loading health data…</AppText>
+        </View>
+      </AppScreen>
+    );
+  }
+
+  if (status === 'unavailable') {
+    return null;
+  }
 
   return (
     <AppScreen>
@@ -37,9 +58,17 @@ export default function ActivityToday() {
       </View>
       <View style={styles.statsRow}>
         {[
-          { label: 'Heart rate', value: `${data.avgHeartRate ?? 68} bpm` },
-          { label: 'Active cal', value: '420' },
-          { label: 'Distance', value: '5.2 km' },
+          {
+            label: 'Heart rate',
+            value: data.avgHeartRate != null ? `${data.avgHeartRate} bpm` : '—',
+          },
+          {
+            label: 'Active cal',
+            value: workouts.length
+              ? `${workouts.reduce((s, w) => s + (w.calories ?? 0), 0)}`
+              : '—',
+          },
+          { label: 'Distance', value: distanceKm === '—' ? '—' : `${distanceKm} km` },
         ].map((s) => (
           <AppCard key={s.label} style={styles.stat}>
             <AppText variant="caption">{s.label}</AppText>
@@ -50,19 +79,29 @@ export default function ActivityToday() {
       <AppText variant="overline" style={{ marginBottom: Spacing.two }}>
         Workouts today
       </AppText>
-      {MOCK_WORKOUTS.map((w) => (
-        <TouchableOpacity
-          key={w.id}
-          onPress={() => navigate(`/(app)/(tabs)/activity/workout/${w.id}`)}
-        >
-          <AppCard style={styles.workout}>
-            <AppText variant="bodyStrong">{w.type}</AppText>
-            <AppText variant="caption">
-              {w.duration} · {w.calories} kcal · {w.source}
-            </AppText>
-          </AppCard>
-        </TouchableOpacity>
-      ))}
+      {workouts.length === 0 ? (
+        <AppText variant="caption" color={Colors.light.textSecondary}>
+          No workouts recorded today. Tap below to log one manually.
+        </AppText>
+      ) : (
+        workouts.map((w) => (
+          <TouchableOpacity
+            key={w.id}
+            onPress={() =>
+              navigate(
+                `/(app)/(tabs)/activity/workout/${w.id}?type=${encodeURIComponent(w.type)}&duration=${w.durationMin}&calories=${w.calories ?? 0}&source=${encodeURIComponent(w.source)}`,
+              )
+            }
+          >
+            <AppCard style={styles.workout}>
+              <AppText variant="bodyStrong">{w.type}</AppText>
+              <AppText variant="caption">
+                {w.durationMin} min · {w.calories ?? '—'} kcal · {w.source}
+              </AppText>
+            </AppCard>
+          </TouchableOpacity>
+        ))
+      )}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigate('/(app)/(tabs)/activity/manual-entry')}
@@ -94,17 +133,11 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     alignItems: 'center',
   },
-  empty: {
+  loading: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.three,
     paddingVertical: Spacing.six,
-  },
-  cta: {
-    backgroundColor: Colors.light.primary,
-    paddingHorizontal: Spacing.five,
-    paddingVertical: Spacing.three,
-    borderRadius: Radius.pill,
   },
 });

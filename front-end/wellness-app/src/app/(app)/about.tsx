@@ -6,6 +6,7 @@ import { AppText } from '@/components/ui/AppText';
 import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { SettingsRow } from '@/components/features/profile/SettingsRow';
 import { Spacing } from '@/constants/theme';
+import { navigate } from '@/lib/router';
 
 export default function AboutScreen() {
   const version = Constants.expoConfig?.version ?? '1.0.0';
@@ -20,8 +21,8 @@ export default function AboutScreen() {
           v{version} (build {build})
         </AppText>
       </View>
-      <SettingsRow label="Privacy Policy" onPress={() => {}} />
-      <SettingsRow label="Terms of Service" onPress={() => {}} />
+      <SettingsRow label="Privacy Policy" onPress={() => navigate('/(app)/privacy')} />
+      <SettingsRow label="Terms of Service" onPress={() => navigate('/(app)/terms')} />
       <AppText variant="caption" style={{ marginTop: Spacing.four }}>
         Acknowledgements: Expo, Supabase, Google Gemini, Health Connect.
       </AppText>

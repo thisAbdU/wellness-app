@@ -1,22 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import { Animated, Pressable, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { navigate, replace } from '@/lib/router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Audio } from 'expo-av';
+import { navigate } from '@/lib/router';
 import { AppScreen } from '@/components/ui/AppScreen';
 import { AppText } from '@/components/ui/AppText';
 import { AppButton } from '@/components/ui/AppButton';
 import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { LanguagePicker } from '@/components/features/onboarding/LanguagePicker';
 import { Colors, Radius, Spacing } from '@/constants/theme';
+import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { saveAiInsight } from '@/services/profileService';
+import type { VoiceCoachResult } from '@/lib/api/types';
 
 type Phase = 'idle' | 'recording' | 'processing' | 'response';
 
 export default function VoiceCoachScreen() {
-  const router = useRouter();
+  const { user } = useAuth();
   const [phase, setPhase] = useState<Phase>('idle');
   const [lang, setLang] = useState<'en' | 'am'>('en');
   const [seconds, setSeconds] = useState(0);
-  const pulse = React.useRef(new Animated.Value(1)).current;
+  const [result, setResult] = useState<VoiceCoachResult | null>(null);
+  const [saving, setSaving] = useState(false);
+  const recordingRef = useRef<Audio.Recording | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const pulse = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Audio.requestPermissionsAsync();
+    Audio.setAudioModeAsync({
+      allowsRecordingIOS: true,
+      playsInSilentModeIOS: true,
+    });
+    return () => {
+      soundRef.current?.unloadAsync();
+    };
+  }, []);
 
   useEffect(() => {
     if (phase !== 'recording') return;
@@ -35,14 +54,72 @@ export default function VoiceCoachScreen() {
     }
   }, [phase, pulse]);
 
-  const startRecording = () => {
-    setSeconds(0);
-    setPhase('recording');
+  const startRecording = async () => {
+    try {
+      await soundRef.current?.unloadAsync();
+      soundRef.current = null;
+      const recording = new Audio.Recording();
+      await recording.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      await recording.startAsync();
+      recordingRef.current = recording;
+      setSeconds(0);
+      setResult(null);
+      setPhase('recording');
+    } catch (e) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Could not start recording');
+    }
   };
 
-  const stopRecording = () => {
+  const stopRecording = async () => {
+    const recording = recordingRef.current;
+    if (!recording) return;
     setPhase('processing');
-    setTimeout(() => setPhase('response'), 2000);
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      recordingRef.current = null;
+      if (!uri) throw new Error('No recording URI');
+
+      const response = await api.coach.voice(uri, lang);
+      setResult(response);
+      setPhase('response');
+    } catch (e) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Failed to process voice');
+      setPhase('idle');
+    }
+  };
+
+  const playResponse = async () => {
+    if (!result?.audio_url) {
+      Alert.alert('No audio', 'Text-only response available.');
+      return;
+    }
+    try {
+      await soundRef.current?.unloadAsync();
+      const { sound } = await Audio.Sound.createAsync({ uri: result.audio_url });
+      soundRef.current = sound;
+      await sound.playAsync();
+    } catch (e) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Could not play audio');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user?.id || !result) return;
+    setSaving(true);
+    try {
+      const content = JSON.stringify({
+        question: result.transcript,
+        answer: result.response_text,
+        language: result.language,
+      });
+      await saveAiInsight(user.id, 'voice_coach', content);
+      Alert.alert('Saved', 'Insight saved to your history.');
+    } catch (e) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Failed to save insight');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -65,22 +142,21 @@ export default function VoiceCoachScreen() {
         <View style={styles.center}>
           <AppText variant="bodyStrong">Processing…</AppText>
           <AppText variant="caption" style={{ marginTop: Spacing.three }}>
-            Transcribing: &quot;How can I sleep better this week?&quot;
+            Transcribing your question…
           </AppText>
         </View>
-      ) : phase === 'response' ? (
+      ) : phase === 'response' && result ? (
         <View style={styles.center}>
           <AppText variant="overline">You asked</AppText>
-          <AppText variant="body">How can I sleep better this week?</AppText>
+          <AppText variant="body">{result.transcript}</AppText>
           <AppText variant="overline" style={{ marginTop: Spacing.four }}>
             Coach
           </AppText>
-          <AppText variant="body">
-            Try a consistent bedtime and avoid screens 30 minutes before sleep. Your data shows
-            better rest after light evening activity.
-          </AppText>
-          <AppButton label="▶ Play response" variant="secondary" onPress={() => {}} />
-          <AppButton label="Save this insight" onPress={() => {}} />
+          <AppText variant="body">{result.response_text}</AppText>
+          {result.tts_available && result.audio_url ? (
+            <AppButton label="▶ Play response" variant="secondary" onPress={playResponse} />
+          ) : null}
+          <AppButton label="Save this insight" onPress={handleSave} loading={saving} />
           <AppButton label="Ask another question" variant="ghost" onPress={() => setPhase('idle')} />
         </View>
       ) : (

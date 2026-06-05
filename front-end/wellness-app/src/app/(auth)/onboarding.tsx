@@ -6,7 +6,7 @@ import { AppButton } from '@/components/ui/AppButton';
 import { WellnessBackground } from '@/components/ui/WellnessBackground';
 import { OnboardingSlideVisual } from '@/components/features/onboarding/OnboardingSlideVisual';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-import { completeOnboarding } from '@/lib/appState';
+import { useAuth } from '@/contexts/AuthContext';
 import { replace } from '@/lib/router';
 
 const SLIDES = [
@@ -44,7 +44,8 @@ const SLIDES = [
   },
 ];
 
-export default function OnboardingCarousel() {
+export default function OnboardingScreen() {
+  const { completeOnboarding } = useAuth();
   const insets = useSafeAreaInsets();
   const [index, setIndex] = useState(0);
   const fade = useRef(new Animated.Value(1)).current;
@@ -61,17 +62,17 @@ export default function OnboardingCarousel() {
     }).start();
   }, [fade, index]);
 
-  const next = () => {
+  const next = async () => {
     if (!isLast) {
       setIndex((i) => i + 1);
       return;
     }
-    completeOnboarding();
+    await completeOnboarding();
     replace('/(auth)/sign-in');
   };
 
-  const skip = () => {
-    completeOnboarding();
+  const skip = async () => {
+    await completeOnboarding();
     replace('/(auth)/sign-in');
   };
 

@@ -1,21 +1,26 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
-import { navigate, replace } from '@/lib/router';
+import { navigate } from '@/lib/router';
 import { AuthCardLayout } from '@/components/ui/AuthCardLayout';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppText } from '@/components/ui/AppText';
 import { AuthHeader } from '@/components/auth/AuthHeader';
 import { AuthTextField } from '@/components/auth/AuthTextField';
 import { Colors, Radius, Spacing } from '@/constants/theme';
+import { useProfileSetup } from '@/contexts/ProfileSetupContext';
 
 export default function ProfileStep2() {
-  const router = useRouter();
-  const [height, setHeight] = useState('175');
-  const [weight, setWeight] = useState('72');
+  const { data, update } = useProfileSetup();
+  const [height, setHeight] = useState(String(data.heightCm));
+  const [weight, setWeight] = useState(String(data.weightKg));
   const h = parseInt(height, 10) || 175;
   const w = parseInt(weight, 10) || 72;
   const scale = Math.min(1.2, Math.max(0.8, w / 70));
+
+  const continueNext = () => {
+    update({ heightCm: h, weightKg: w });
+    navigate('/(auth)/profile-setup/step-3');
+  };
 
   return (
     <AuthCardLayout>
@@ -24,19 +29,14 @@ export default function ProfileStep2() {
         <View
           style={[
             styles.body,
-            {
-              height: 80 + (h - 150) * 0.4,
-              transform: [{ scaleX: scale }],
-            },
+            { height: 80 + (h - 150) * 0.4, transform: [{ scaleX: scale }] },
           ]}
         />
-        <AppText variant="caption">
-          {h} cm · {w} kg
-        </AppText>
+        <AppText variant="caption">{h} cm · {w} kg</AppText>
       </View>
       <AuthTextField label="Height (cm)" value={height} onChangeText={setHeight} keyboardType="numeric" />
       <AuthTextField label="Weight (kg)" value={weight} onChangeText={setWeight} keyboardType="numeric" />
-      <AppButton label="Continue" onPress={() => navigate('/(auth)/profile-setup/step-3')} />
+      <AppButton label="Continue" onPress={continueNext} />
     </AuthCardLayout>
   );
 }
