@@ -7,9 +7,9 @@ from typing import Any
 
 from fastapi import HTTPException, status
 
+from app.badges.service import check_and_award_badges
 from app.db.helpers import extract_records, first_record
 from app.db.supabase_client import get_supabase_admin_client
-from app.badges.service import check_and_award_badges
 
 
 def _metric_value(row: dict, metric: str) -> float:
@@ -22,15 +22,41 @@ def _metric_value(row: dict, metric: str) -> float:
 	return 0.0
 
 
-def get_active_challenges(user_id: str) -> list[dict]:
-	client = get_supabase_admin_client()
-	response = (
+def _fetch_template_challenge(
+	client: object,
+	user_id: str,
+	template_id: str,
+	*,
+	active_only: bool = False,
+) -> dict | None:
+	query = (
 		client.table("user_challenges")
 		.select("*")
 		.eq("user_id", user_id)
-		.eq("status", "active")
-		.execute()
+		.eq("template_id", template_id)
 	)
+	if active_only:
+		query = query.eq("status", "active")
+	return first_record(query.limit(1).execute())
+
+
+def get_active_challenges(user_id: str) -> list[dict]:
+	client = get_supabase_admin_client()
+	try:
+		response = (
+			client.table("user_challenges")
+			.select("*")
+			.eq("user_id", user_id)
+			.eq("status", "active")
+			.not_.is_("template_id", "null")
+			.execute()
+		)
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to fetch active challenges: {exc}",
+		) from exc
+
 	rows = extract_records(response)
 	templates = _templates_by_id()
 	return [_enrich(row, templates) for row in rows]
@@ -38,17 +64,25 @@ def get_active_challenges(user_id: str) -> list[dict]:
 
 def _templates_by_id() -> dict[str, dict]:
 	client = get_supabase_admin_client()
-	response = client.table("challenge_templates").select("*").eq("is_active", True).execute()
-	return {str(t["id"]): t for t in extract_records(response)}
+	try:
+		response = client.table("challenge_templates").select("*").eq("is_active", True).execute()
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to fetch challenge templates: {exc}",
+		) from exc
+	return {str(template["id"]): template for template in extract_records(response)}
 
 
 def _enrich(user_challenge: dict, templates: dict[str, dict]) -> dict:
 	merged = dict(user_challenge)
-	tid = str(user_challenge.get("challenge_id") or user_challenge.get("template_id") or "")
-	template = templates.get(tid)
+	template_id = str(user_challenge.get("template_id") or "")
+	template = templates.get(template_id)
 	if template:
+		# Keep challenge_id in the API response for the unchanged frontend route contract.
 		merged.update(
 			{
+				"challenge_id": template_id,
 				"title": template.get("title"),
 				"title_am": template.get("title_am"),
 				"metric": template.get("metric"),
@@ -62,47 +96,88 @@ def _enrich(user_challenge: dict, templates: dict[str, dict]) -> dict:
 
 def start_challenge(user_id: str, template_id: str) -> dict:
 	client = get_supabase_admin_client()
-	template = first_record(
-		client.table("challenge_templates").select("*").eq("id", template_id).eq("is_active", True).execute()
-	)
+
+	try:
+		template = first_record(
+			client.table("challenge_templates")
+			.select("*")
+			.eq("id", template_id)
+			.eq("is_active", True)
+			.limit(1)
+			.execute()
+		)
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to load challenge template: {exc}",
+		) from exc
+
 	if template is None:
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Challenge template not found")
 
-	today = datetime.now(timezone.utc).date().isoformat()
+	try:
+		existing = _fetch_template_challenge(client, user_id, template_id, active_only=True)
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to check existing challenge: {exc}",
+		) from exc
+
+	if existing is not None:
+		return _enrich(existing, {template_id: template})
+
+	now = datetime.now(timezone.utc)
 	record = {
 		"user_id": user_id,
-		"challenge_id": template_id,
+		"template_id": template_id,
+		"challenge_id": None,
 		"status": "active",
 		"progress": 0,
-		"start_date": today,
-		"started_at": datetime.now(timezone.utc).isoformat(),
-		"progress_json": {"qualifying_days": 0, "required_days": template["duration_days"], "log": {}},
+		"start_date": now.date().isoformat(),
+		"started_at": now.isoformat(),
+		"completed_at": None,
+		"progress_json": {
+			"qualifying_days": 0,
+			"required_days": int(template["duration_days"]),
+			"log": {},
+		},
 	}
-	response = (
-		client.table("user_challenges")
-		.upsert(record, on_conflict="user_id,challenge_id")
-		.select("*")
-		.execute()
-	)
-	saved = first_record(response)
+
+	try:
+		# This Supabase client does not support .select("*") after upsert().
+		client.table("user_challenges").upsert(
+			record,
+			on_conflict="user_id,template_id",
+		).execute()
+		saved = _fetch_template_challenge(client, user_id, template_id)
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to start challenge: {exc}",
+		) from exc
+
 	if saved is None:
-		raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to start challenge")
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail="Challenge write completed but the saved challenge could not be fetched",
+		)
+
 	return _enrich(saved, {template_id: template})
 
 
 def get_challenge_progress(user_id: str, challenge_id: str) -> dict:
 	client = get_supabase_admin_client()
-	response = (
-		client.table("user_challenges")
-		.select("*")
-		.eq("user_id", user_id)
-		.eq("challenge_id", challenge_id)
-		.limit(1)
-		.execute()
-	)
-	row = first_record(response)
+	try:
+		row = _fetch_template_challenge(client, user_id, challenge_id)
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to fetch challenge progress: {exc}",
+		) from exc
+
 	if row is None:
 		raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Challenge not found")
+
 	templates = _templates_by_id()
 	template = templates.get(challenge_id)
 	if template and row.get("status") == "active":
@@ -123,14 +198,21 @@ def evaluate_challenge(user_id: str, user_challenge: dict, template: dict) -> di
 	metric = template.get("metric", "steps")
 	target = float(template.get("target_value") or 0)
 
-	response = (
-		client.table("health_daily_summaries")
-		.select("*")
-		.eq("user_id", user_id)
-		.gte("summary_date", start.isoformat())
-		.lte("summary_date", window_end.isoformat())
-		.execute()
-	)
+	try:
+		response = (
+			client.table("health_daily_summaries")
+			.select("*")
+			.eq("user_id", user_id)
+			.gte("summary_date", start.isoformat())
+			.lte("summary_date", window_end.isoformat())
+			.execute()
+		)
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to fetch challenge health data: {exc}",
+		) from exc
+
 	rows = extract_records(response)
 	qualifying_days = 0
 	log: dict[str, bool] = {}
@@ -157,9 +239,11 @@ def evaluate_challenge(user_id: str, user_challenge: dict, template: dict) -> di
 	elif today > start + timedelta(days=duration):
 		new_status = "failed"
 
+	template_id = str(user_challenge.get("template_id") or template["id"])
 	updated = {
 		"user_id": user_id,
-		"challenge_id": user_challenge.get("challenge_id"),
+		"template_id": template_id,
+		"challenge_id": None,
 		"progress": qualifying_days,
 		"status": new_status,
 		"progress_json": progress_json,
@@ -167,25 +251,48 @@ def evaluate_challenge(user_id: str, user_challenge: dict, template: dict) -> di
 		"start_date": start_date,
 		"started_at": user_challenge.get("started_at"),
 	}
-	client.table("user_challenges").upsert(updated, on_conflict="user_id,challenge_id").execute()
+
+	try:
+		client.table("user_challenges").upsert(
+			updated,
+			on_conflict="user_id,template_id",
+		).execute()
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to update challenge progress: {exc}",
+		) from exc
 
 	if new_status == "completed":
 		check_and_award_badges(user_id=user_id, summary_date=today.isoformat())
 
-	return _enrich({**user_challenge, **updated}, {str(template["id"]): template})
+	return _enrich({**user_challenge, **updated}, {template_id: template})
 
 
 def run_daily_challenge_evaluation() -> int:
 	client = get_supabase_admin_client()
-	response = client.table("user_challenges").select("*").eq("status", "active").execute()
+	try:
+		response = (
+			client.table("user_challenges")
+			.select("*")
+			.eq("status", "active")
+			.not_.is_("template_id", "null")
+			.execute()
+		)
+	except Exception as exc:
+		raise HTTPException(
+			status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+			detail=f"Failed to load active challenges: {exc}",
+		) from exc
+
 	active = extract_records(response)
 	templates = _templates_by_id()
 	count = 0
-	for uc in active:
-		tid = str(uc.get("challenge_id") or "")
-		template = templates.get(tid)
+	for user_challenge in active:
+		template_id = str(user_challenge.get("template_id") or "")
+		template = templates.get(template_id)
 		if not template:
 			continue
-		evaluate_challenge(str(uc["user_id"]), uc, template)
+		evaluate_challenge(str(user_challenge["user_id"]), user_challenge, template)
 		count += 1
 	return count
