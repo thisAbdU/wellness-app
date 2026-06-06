@@ -1,9 +1,8 @@
-import React from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/AppText';
 import { Colors, Radius, Spacing } from '@/constants/theme';
-
-const { width } = Dimensions.get('window');
+import { useContentLayout } from '@/hooks/useContentLayout';
 
 type Metric = {
   icon: string;
@@ -17,11 +16,20 @@ type Metric = {
 
 type Props = { metrics: Metric[] };
 
+const GRID_GAP = 10;
+
 export function TodaySummary({ metrics }: Props) {
+  const { contentWidth, columns } = useContentLayout();
+
+  const tileWidth = useMemo(() => {
+    if (columns === 1) return contentWidth;
+    return (contentWidth - GRID_GAP * (columns - 1)) / columns;
+  }, [columns, contentWidth]);
+
   return (
     <View style={styles.grid}>
       {metrics.map((m) => (
-        <View key={m.label} style={styles.tile}>
+        <View key={m.label} style={[styles.tile, { width: tileWidth }]}>
           <View style={[styles.icon, { backgroundColor: m.accentBg }]}>
             <AppText style={{ fontSize: 16 }}>{m.icon}</AppText>
           </View>
@@ -41,25 +49,33 @@ export function TodaySummary({ metrics }: Props) {
   );
 }
 
-const tileW = (width - Spacing.four * 2 - 10) / 2;
-
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: Spacing.three },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: GRID_GAP,
+    marginBottom: Spacing.two,
+    width: '100%',
+  },
   tile: {
-    width: tileW,
     backgroundColor: Colors.light.backgroundElement,
-    borderRadius: Radius.lg,
-    padding: 14,
+    borderRadius: Radius.md,
+    padding: 12,
     borderWidth: 0.5,
     borderColor: Colors.light.border,
+    shadowColor: Colors.light.cardShadow,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 2,
   },
   icon: {
-    width: 32,
-    height: 32,
+    width: 28,
+    height: 28,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  val: { fontSize: 20, lineHeight: 24, marginBottom: 2 },
+  val: { fontSize: 18, lineHeight: 22, marginBottom: 2 },
 });

@@ -81,7 +81,7 @@ export default function StreakDetail() {
       <AppCard style={styles.statCard}>
         <AppText variant="overline">Daily streak</AppText>
         <AppText variant="title">{primaryCount} days</AppText>
-        <AppText variant="caption">Wellness streak: {wellnessCount} days</AppText>
+        <AppText variant="caption">BIRTU streak: {wellnessCount} days</AppText>
         {longest > 0 ? (
           <AppText variant="caption">Longest streak: {longest} days</AppText>
         ) : null}

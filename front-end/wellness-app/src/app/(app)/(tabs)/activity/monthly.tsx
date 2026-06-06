@@ -93,7 +93,7 @@ export default function ActivityMonthly() {
           {monthly ? (
             <AppCard style={styles.summary}>
               <AppText variant="bodyStrong">
-                Avg wellness: {Math.round(monthly.average_wellness_score)}
+                Avg BIRTU score: {Math.round(monthly.average_wellness_score)}
               </AppText>
               <AppText variant="caption">
                 {monthly.average_steps.toLocaleString()} steps/day ·{' '}

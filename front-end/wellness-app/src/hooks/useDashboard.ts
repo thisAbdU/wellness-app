@@ -6,7 +6,7 @@ import { useHealthConnect } from './useHealthConnect';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function useDashboard() {
-  const { profile } = useAuth();
+  const { profile, user, isLoading: authLoading } = useAuth();
   const health = useHealthConnect();
   const [wellnessScore, setWellnessScore] = useState<WellnessScore | null>(null);
   const [streaks, setStreaks] = useState<Streak[]>([]);
@@ -15,6 +15,13 @@ export function useDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    if (authLoading) return;
+    if (!user?.id) {
+      setStreaks([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -37,7 +44,7 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [health.hasAnyData, health.data]);
+  }, [authLoading, user?.id, health.hasAnyData, health.data]);
 
   useEffect(() => {
     refresh();

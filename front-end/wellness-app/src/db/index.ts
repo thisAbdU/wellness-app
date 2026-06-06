@@ -4,8 +4,9 @@ import { schema } from './schema';
 import { HealthMetric } from './models/HealthMetrics';
 import { Checkin } from './models/Checkin';
 import { AiFeedback } from './models/AiFeedback';
+import { SyncQueue } from './models/SyncQueue';
 
-const modelClasses = [HealthMetric, Checkin, AiFeedback];
+const modelClasses = [HealthMetric, Checkin, AiFeedback, SyncQueue];
 
 function makeAdapter() {
   if (Platform.OS === 'web') {

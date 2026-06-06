@@ -19,12 +19,13 @@ export async function enqueue(
 ) {
   await database.write(async () => {
     await database.get('sync_queue').create((entry: Model) => {
-      entry._raw.table_name = tableName;
-      entry._raw.record_id  = recordId;
-      entry._raw.operation  = operation;
-      entry._raw.payload    = JSON.stringify(payload);
-      entry._raw.created_at = Date.now();
-      entry._raw.attempts   = 0;
+      const e: any = entry as any;
+      e._raw.table_name = tableName;
+      e._raw.record_id = recordId;
+      e._raw.operation = operation;
+      e._raw.payload = JSON.stringify(payload);
+      e._raw.created_at = Date.now();
+      e._raw.attempts = 0;
     });
   });
 }
@@ -34,15 +35,12 @@ export async function flushSyncQueue() {
   const net = await NetInfo.fetch();
   if (!net.isConnected) return;
 
-  const queue = await database
-    .get('sync_queue')
-    .query(Q.sortBy('created_at', Q.asc))
-    .fetch();
+  const queue = await database.get('sync_queue').query(Q.sortBy('created_at', Q.asc)).fetch();
 
   for (const entry of queue) {
-    const raw     = entry._raw;
-    const payload = JSON.parse(raw.payload as string);
-    const pgTable = TABLE_MAP[raw.table_name as string];
+  const raw: any = (entry as any)._raw;
+  const payload = JSON.parse(raw.payload as string);
+  const pgTable = TABLE_MAP[raw.table_name as string];
 
     if (!pgTable) continue;
 
@@ -62,8 +60,9 @@ export async function flushSyncQueue() {
 
       await database.write(async () => {
         await entry.update((r: Model) => {
-          r._raw.attempts   = (r._raw.attempts as number) + 1;
-          r._raw.last_error = message;
+          const rr: any = r as any;
+          rr._raw.attempts = (rr._raw.attempts as number) + 1;
+          rr._raw.last_error = message;
         });
       });
 
@@ -97,15 +96,16 @@ export async function pullAiFeedbacks(userId: string) {
 
       if (existing.length === 0) {
         await database.get('ai_feedbacks').create((f: Model) => {
-          f._raw.supabase_id  = row.id;
-          f._raw.generated_at = new Date(row.generated_at as string).getTime();
-          f._raw.type         = row.type;
-          f._raw.content      = row.content;
-          f._raw.related_date = row.related_date
+          const ff: any = f as any;
+          ff._raw.supabase_id = row.id;
+          ff._raw.generated_at = new Date(row.generated_at as string).getTime();
+          ff._raw.type = row.type;
+          ff._raw.content = row.content;
+          ff._raw.related_date = row.related_date
             ? new Date(row.related_date as string).getTime()
             : null;
-          f._raw.is_read  = false;
-          f._raw.synced_at = Date.now();
+          ff._raw.is_read = false;
+          ff._raw.synced_at = Date.now();
         });
       }
     }

@@ -10,7 +10,7 @@ Base URL: `http://127.0.0.1:8000`
 - Query params: None
 - Example response:
   ```json
-  {"message": "Wellness Tracker Backend is running"}
+  {"message": "BIRTU Backend is running"}
   ```
 
 ### GET `/health-check`

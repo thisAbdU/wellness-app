@@ -5,6 +5,19 @@ import {
   fetchEmergencyContacts as fetchEmergencyContactsFromApi,
 } from '@/services/emergencyContactService';
 
+const FITNESS_GOAL_MAP: Record<string, string> = {
+  'Lose Weight': 'lose',
+  'Maintain Weight': 'maintain',
+  'Gain Weight': 'gain',
+  'General Wellness': 'maintain',
+  'Build Muscle': 'gain',
+};
+
+function normalizeFitnessGoal(goal?: string): string {
+  if (!goal) return 'maintain';
+  return FITNESS_GOAL_MAP[goal] ?? goal;
+}
+
 export type ProfileSetupData = {
   fullName: string;
   age: number;
@@ -58,12 +71,12 @@ export async function upsertProfile(
     region: data.region,
     height_cm: data.heightCm ?? data.height_cm,
     weight_kg: data.weightKg ?? data.weight_kg,
-    fitness_goal: data.fitnessGoal ?? data.fitness_goal,
+    fitness_goal: normalizeFitnessGoal(data.fitnessGoal ?? data.fitness_goal),
     preferred_language: data.preferredLanguage ?? data.preferred_language ?? 'en',
     neighborhood: data.neighborhood,
     university: data.university,
     company: data.company,
-    health_conditions: healthConditions.length ? healthConditions : undefined,
+    health_conditions: healthConditions,
     notification_prefs: data.notification_prefs,
     fcm_token: data.fcm_token,
   };

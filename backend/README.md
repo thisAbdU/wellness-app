@@ -1,6 +1,6 @@
-# Wellness Tracker Backend
+# BIRTU Backend
 
-Backend for the Wellness Tracker app built with FastAPI, Supabase, and Python.
+Backend for the BIRTU mobile app built with FastAPI, Supabase, and Python.
 
 ## Tech Stack
 

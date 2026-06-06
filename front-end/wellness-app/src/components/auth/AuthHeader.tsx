@@ -15,7 +15,7 @@ export function AuthHeader({ title, subtitle }: Props) {
       <View style={styles.badge}>
         <AppText style={styles.badgeIcon}>🌿</AppText>
         <AppText variant="caption" style={styles.badgeText}>
-          Your wellness space
+          Your BIRTU space
         </AppText>
       </View>
 

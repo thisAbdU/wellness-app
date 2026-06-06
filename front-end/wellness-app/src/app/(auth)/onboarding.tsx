@@ -5,6 +5,7 @@ import { AppText } from '@/components/ui/AppText';
 import { AppButton } from '@/components/ui/AppButton';
 import { WellnessBackground } from '@/components/ui/WellnessBackground';
 import { OnboardingSlideVisual } from '@/components/features/onboarding/OnboardingSlideVisual';
+import { BRAND_NAME } from '@/constants/brand';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { replace } from '@/lib/router';
@@ -21,7 +22,7 @@ const SLIDES = [
   {
     key: 'ethiopia' as const,
     step: 'Culture',
-    title: 'Wellness that understands you',
+    title: 'BIRTU understands you',
     body: 'Amharic and English, Orthodox fasting-aware meals, and leaderboards rooted in your community.',
     accent: '#3D8B63',
     accentSoft: '#E8F4EE',
@@ -85,7 +86,7 @@ export default function OnboardingScreen() {
               <AppText style={styles.leafText}>🌱</AppText>
             </View>
             <AppText variant="bodyStrong" color={Colors.light.primary}>
-              Wellness
+              {BRAND_NAME}
             </AppText>
           </View>
           {!isLast ? (

@@ -19,7 +19,8 @@ from app.settings import settings
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 CACHE_TTL_HOURS = 6
 MAX_CONTEXT_TOKENS = 2000
-MODEL_NAME = "gemini-1.5-flash"
+# Rough chars-per-token estimate for local truncation (avoids count_tokens API).
+_CHARS_PER_TOKEN = 4
 
 
 class InsightType(str, enum.Enum):
@@ -39,6 +40,36 @@ INSIGHT_PROMPT_FILES = {
 	InsightType.DAILY_NUDGE: "daily_nudge.txt",
 	InsightType.NUTRITION_PLAN: "nutrition_daily.txt",
 }
+
+_FALLBACK_INSIGHTS = {
+	InsightType.DAILY_NUDGE: (
+		"Start with a short walk today — even 10 minutes of movement helps your wellness score. "
+		"Stay hydrated and aim for a consistent sleep schedule tonight."
+	),
+	InsightType.WEEKLY_SUMMARY: "Your week is off to a steady start. Keep logging activity and sleep to unlock personalized trends.",
+	InsightType.BURNOUT_WARNING: "Take a rest day if you feel run down. Recovery is part of progress.",
+	InsightType.BEHAVIORAL_PATTERN: "We are learning your rhythms. Sync health data for sharper pattern detection.",
+	InsightType.RECOVERY_ADVICE: "Prioritize 7+ hours of sleep and light stretching after workouts.",
+}
+
+
+def _fallback_nutrition_plan(context: dict[str, Any]) -> str:
+	targets = context.get("targets") or {}
+	by_meal = context.get("eligible_foods") or {}
+	lines = [
+		f"Daily target: {targets.get('calories_min', 1800)}–{targets.get('calories_max', 2200)} kcal "
+		f"(TDEE ~{targets.get('tdee', 2000)}).",
+		"",
+	]
+	for meal in ("breakfast", "lunch", "dinner", "snack"):
+		options = by_meal.get(meal) or []
+		if not options:
+			continue
+		names = [str(item.get("name_am") or item.get("name") or "meal") for item in options[:3]]
+		lines.append(f"{meal.title()}: {', '.join(names)}")
+	if len(lines) <= 2:
+		lines.append("Add Ethiopian foods via migrations, then refresh for meal suggestions.")
+	return "\n".join(lines)
 
 
 def _load_prompt(filename: str) -> str:
@@ -61,13 +92,17 @@ def _first_record(response: object) -> dict | None:
 
 class HealthCoachClient:
 	def __init__(self) -> None:
-		if not settings.gemini_api_key:
-			raise HTTPException(
-				status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-				detail="Gemini API is not configured",
-			)
-		genai.configure(api_key=settings.gemini_api_key)
+		self._api_configured = bool(settings.gemini_api_key)
+		self._model_name = settings.gemini_model
+		if self._api_configured:
+			genai.configure(api_key=settings.gemini_api_key)
 		self._system_prompt = _load_prompt("system_base.txt")
+
+	def _fallback_for_type(self, insight_type: InsightType) -> str:
+		return _FALLBACK_INSIGHTS.get(
+			insight_type,
+			"Personalized coaching will appear once Gemini is configured.",
+		)
 
 	def get_insight(self, user_id: str, insight_type: str) -> str:
 		try:
@@ -81,6 +116,9 @@ class HealthCoachClient:
 		cached = self._get_cached_insight(user_id, parsed_type)
 		if cached:
 			return cached
+
+		if not self._api_configured:
+			return self._fallback_for_type(parsed_type)
 
 		context_block = self._build_context_block(user_id)
 		return self.generate_with_context(
@@ -108,6 +146,11 @@ class HealthCoachClient:
 			cached = self._get_cached_insight(user_id, parsed_type)
 			if cached:
 				return cached
+
+		if not self._api_configured:
+			if isinstance(context_block, dict) and parsed_type == InsightType.NUTRITION_PLAN:
+				return _fallback_nutrition_plan(context_block)
+			return self._fallback_for_type(parsed_type)
 
 		if isinstance(context_block, dict):
 			context_text = json.dumps(context_block, ensure_ascii=False)
@@ -193,15 +236,10 @@ class HealthCoachClient:
 		return self._truncate_context(str(context))
 
 	def _truncate_context(self, content: str) -> str:
-		model = genai.GenerativeModel(model_name=MODEL_NAME)
-		token_count = model.count_tokens(content).total_tokens
-		if token_count <= MAX_CONTEXT_TOKENS:
+		max_chars = MAX_CONTEXT_TOKENS * _CHARS_PER_TOKEN
+		if len(content) <= max_chars:
 			return content
-
-		trimmed = content
-		while len(trimmed) > 200 and model.count_tokens(trimmed).total_tokens > MAX_CONTEXT_TOKENS:
-			trimmed = trimmed[: int(len(trimmed) * 0.85)]
-		return trimmed + "\n...[truncated]"
+		return content[:max_chars] + "\n...[truncated]"
 
 	def _generate_insight(
 		self,
@@ -221,7 +259,7 @@ class HealthCoachClient:
 	)
 	def _call_gemini(self, user_message: str, timeout_seconds: float | None = None) -> str:
 		model = genai.GenerativeModel(
-			model_name=MODEL_NAME,
+			model_name=self._model_name,
 			system_instruction=self._system_prompt,
 		)
 		try:
