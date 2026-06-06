@@ -53,7 +53,7 @@ landing-page/
 
 ## Customization
 
-- **Branding & copy** — edit `src/lib/config.ts`
-- **Features list** — edit `src/components/Features.tsx`
-- **Install steps** — edit `src/components/InstallGuide.tsx`
-- **Colors** — edit CSS variables in `src/app/globals.css` (matches the mobile app palette)
+- **Branding & copy**  edit `src/lib/config.ts`
+- **Features list**  edit `src/components/Features.tsx`
+- **Install steps**  edit `src/components/InstallGuide.tsx`
+- **Colors**  edit CSS variables in `src/app/globals.css` (matches the mobile app palette)

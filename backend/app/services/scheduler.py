@@ -49,7 +49,7 @@ def start_scheduler():
 		from apscheduler.schedulers.background import BackgroundScheduler
 		from apscheduler.triggers.cron import CronTrigger
 	except ImportError:
-		logger.warning("APScheduler not installed — background jobs disabled. pip install APScheduler")
+		logger.warning("APScheduler not installed  background jobs disabled. pip install APScheduler")
 		return None
 
 	_scheduler = BackgroundScheduler(timezone="UTC")

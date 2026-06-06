@@ -50,7 +50,7 @@ export default function HomeDashboard() {
   const sleepLabel =
     sleepHours > 0
       ? `${Math.floor(sleepHours)}h ${Math.round((sleepHours % 1) * 60)}m`
-      : '—';
+      : '';
   const score = wellnessScore?.total_score ?? 0;
 
   const onRefresh = async () => {
@@ -102,7 +102,7 @@ export default function HomeDashboard() {
       {error ? (
         <TouchableOpacity style={styles.errorBanner} onPress={refresh}>
           <AppText variant="caption" color={Colors.light.error}>
-            {error} — Tap to retry
+            {error}  Tap to retry
           </AppText>
         </TouchableOpacity>
       ) : null}
@@ -141,7 +141,7 @@ export default function HomeDashboard() {
         metrics={[
           {
             icon: '👟',
-            value: steps > 0 ? steps.toLocaleString() : '—',
+            value: steps > 0 ? steps.toLocaleString() : '',
             label: 'Steps',
             trend: health.hasAnyData ? 'From Health Connect' : 'No device data',
             trendUp: health.hasAnyData,
@@ -159,7 +159,7 @@ export default function HomeDashboard() {
           },
           {
             icon: '🔥',
-            value: calories > 0 ? String(calories) : '—',
+            value: calories > 0 ? String(calories) : '',
             label: 'Calories',
             trend: calories > 0 ? 'burned today' : 'Sync to update',
             trendUp: calories > 0,
@@ -210,10 +210,10 @@ export default function HomeDashboard() {
       </AppText>
       {health.hasAnyData ? (
         [
-          steps > 0 ? `Steps — ${steps.toLocaleString()}` : null,
-          sleepHours > 0 ? `Sleep — ${sleepLabel}` : null,
+          steps > 0 ? `Steps  ${steps.toLocaleString()}` : null,
+          sleepHours > 0 ? `Sleep  ${sleepLabel}` : null,
           health.data.avgHeartRate
-            ? `Resting HR — ${Math.round(health.data.avgHeartRate)} bpm`
+            ? `Resting HR  ${Math.round(health.data.avgHeartRate)} bpm`
             : null,
         ]
           .filter(Boolean)

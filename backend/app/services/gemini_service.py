@@ -43,7 +43,7 @@ INSIGHT_PROMPT_FILES = {
 
 _FALLBACK_INSIGHTS = {
 	InsightType.DAILY_NUDGE: (
-		"Start with a short walk today — even 10 minutes of movement helps your wellness score. "
+		"Start with a short walk today  even 10 minutes of movement helps your wellness score. "
 		"Stay hydrated and aim for a consistent sleep schedule tonight."
 	),
 	InsightType.WEEKLY_SUMMARY: "Your week is off to a steady start. Keep logging activity and sleep to unlock personalized trends.",

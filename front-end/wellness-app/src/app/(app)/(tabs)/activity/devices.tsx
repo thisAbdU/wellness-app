@@ -48,7 +48,7 @@ export default function DeviceConnections() {
         </AppText>
         {connected ? (
           <AppText variant="caption">
-            Today: {data.steps?.toLocaleString() ?? '—'} steps ·{' '}
+            Today: {data.steps?.toLocaleString() ?? ''} steps ·{' '}
             {data.workoutCount ?? 0} workouts
             {hasAnyData ? '' : ' (no data yet)'}
           </AppText>

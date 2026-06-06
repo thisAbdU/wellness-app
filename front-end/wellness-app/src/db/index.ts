@@ -10,7 +10,7 @@ const modelClasses = [HealthMetric, Checkin, AiFeedback, SyncQueue];
 
 function makeAdapter() {
   if (Platform.OS === 'web') {
-    // Web: in-memory only (no persistence) — good enough for dev/testing
+    // Web: in-memory only (no persistence)  good enough for dev/testing
     const LokiJSAdapter = require('@nozbe/watermelondb/adapters/lokijs').default;
     return new LokiJSAdapter({
       schema,

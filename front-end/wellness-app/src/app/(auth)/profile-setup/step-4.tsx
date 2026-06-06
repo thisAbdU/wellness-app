@@ -17,7 +17,7 @@ export default function ProfileStep4() {
 
   return (
     <AuthCardLayout>
-      <AuthHeader title="Language" subtitle="Step 4 of 6 — Preview your UI" />
+      <AuthHeader title="Language" subtitle="Step 4 of 6  Preview your UI" />
       <LanguagePicker value={lang} onChange={setLang} />
       <AppButton label="Continue" onPress={continueNext} />
     </AuthCardLayout>

@@ -82,10 +82,10 @@ export const MOCK_LEADERBOARD = [
 
 export const MOCK_DEVICES = [
   { id: 'hc', name: 'Google Health Connect', connected: true, lastSync: '2 min ago' },
-  { id: 'garmin', name: 'Garmin', connected: false, lastSync: '—' },
-  { id: 'fitbit', name: 'Fitbit', connected: false, lastSync: '—' },
-  { id: 'xiaomi', name: 'Xiaomi', connected: false, lastSync: '—' },
-  { id: 'samsung', name: 'Samsung Health', connected: false, lastSync: '—' },
+  { id: 'garmin', name: 'Garmin', connected: false, lastSync: '' },
+  { id: 'fitbit', name: 'Fitbit', connected: false, lastSync: '' },
+  { id: 'xiaomi', name: 'Xiaomi', connected: false, lastSync: '' },
+  { id: 'samsung', name: 'Samsung Health', connected: false, lastSync: '' },
 ];
 
 export const MOCK_WORKOUTS = [

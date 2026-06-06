@@ -1,4 +1,4 @@
-"""JWT auth middleware — verifies Supabase tokens and sets request.state."""
+"""JWT auth middleware  verifies Supabase tokens and sets request.state."""
 
 from __future__ import annotations
 

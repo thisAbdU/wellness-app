@@ -55,8 +55,8 @@ export default function ChallengeFailed() {
         <AppText variant="subtitle">Almost there</AppText>
         <AppText variant="caption" style={{ marginTop: Spacing.three, textAlign: 'center' }}>
           {required > 0
-            ? `You completed ${qualifying} of ${required} days. Every attempt builds habit — ready to try again?`
-            : 'Every attempt builds habit — ready to try again?'}
+            ? `You completed ${qualifying} of ${required} days. Every attempt builds habit  ready to try again?`
+            : 'Every attempt builds habit  ready to try again?'}
         </AppText>
         <AppButton
           label="Restart challenge"

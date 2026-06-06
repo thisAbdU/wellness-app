@@ -8,7 +8,7 @@ export function CtaBanner() {
       <div className="mx-auto max-w-4xl rounded-3xl bg-primary px-8 py-12 text-center text-white sm:px-12">
         <h2 className="text-2xl font-semibold sm:text-3xl">Ready to feel better every day?</h2>
         <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-white/80">
-          Join beta users on BIRTU — tracking health, nutrition, and streaks with a calm AI coach in your
+          Join beta users on BIRTU  tracking health, nutrition, and streaks with a calm AI coach in your
           pocket.
         </p>
         {hasApk ? (

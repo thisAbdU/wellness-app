@@ -55,7 +55,7 @@ export default function ChallengeCompleted() {
         Challenge complete!
       </AppText>
       <AppText variant="caption" align="center" style={{ marginTop: Spacing.two }}>
-        {title ? `You finished "${title}"` : 'Great work — badge unlocked!'}
+        {title ? `You finished "${title}"` : 'Great work  badge unlocked!'}
       </AppText>
       <View style={styles.badge}>
         <AppText style={{ fontSize: 64 }}>🏅</AppText>

@@ -1,4 +1,4 @@
-"""Firebase Cloud Messaging helpers (optional — no-op when not configured)."""
+"""Firebase Cloud Messaging helpers (optional  no-op when not configured)."""
 
 from __future__ import annotations
 

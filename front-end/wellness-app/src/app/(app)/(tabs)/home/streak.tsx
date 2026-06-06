@@ -108,7 +108,7 @@ export default function StreakDetail() {
           </View>
         ))
       ) : (
-        <AppText variant="caption">No streaks yet — keep logging activity to build momentum.</AppText>
+        <AppText variant="caption">No streaks yet  keep logging activity to build momentum.</AppText>
       )}
     </AppScreen>
   );

@@ -25,7 +25,7 @@ Backend for the BIRTU mobile app built with FastAPI, Supabase, and Python.
    pip install --default-timeout=120 -r requirements.txt
    ```
 
-   Optional (voice, FCM push, SMS) — install separately if the full download times out:
+   Optional (voice, FCM push, SMS)  install separately if the full download times out:
    ```bash
    pip install --default-timeout=300 -r requirements-optional.txt
    ```

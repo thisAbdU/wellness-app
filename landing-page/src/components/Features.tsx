@@ -3,7 +3,7 @@ const FEATURES = [
     icon: '📊',
     title: 'Daily BIRTU score',
     description:
-      'One number that blends activity, sleep, recovery, and consistency — updated every sync.',
+      'One number that blends activity, sleep, recovery, and consistency  updated every sync.',
   },
   {
     icon: '🥗',
@@ -33,7 +33,7 @@ const FEATURES = [
     icon: '🌐',
     title: 'Works offline',
     description:
-      'Log and track locally — data syncs automatically when you are back online.',
+      'Log and track locally  data syncs automatically when you are back online.',
   },
 ];
 
@@ -47,7 +47,7 @@ export function Features() {
             Everything you need for daily health with BIRTU
           </h2>
           <p className="mt-4 text-lg text-muted">
-            Built for Ethiopian users — bilingual, offline-friendly, and designed for real devices.
+            Built for Ethiopian users  bilingual, offline-friendly, and designed for real devices.
           </p>
         </div>
 

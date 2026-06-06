@@ -48,7 +48,7 @@ export default function ProfileStep6() {
 
   return (
     <AuthCardLayout>
-      <AuthHeader title="Emergency contact" subtitle="Step 6 of 6 — Optional" />
+      <AuthHeader title="Emergency contact" subtitle="Step 6 of 6  Optional" />
       <AuthTextField label="Contact name" placeholder="Name" value={contactName} onChangeText={setContactName} />
       <AuthTextField
         label="Phone"

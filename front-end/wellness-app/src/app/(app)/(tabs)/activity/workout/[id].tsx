@@ -62,10 +62,10 @@ export default function WorkoutDetail() {
           )}
           <View style={styles.stats}>
             {[
-              ['Duration', workout.durationMin ? `${workout.durationMin} min` : '—'],
-              ['Calories', workout.calories != null ? `${workout.calories} kcal` : '—'],
-              ['Avg HR', '—'],
-              ['Zones', '—'],
+              ['Duration', workout.durationMin ? `${workout.durationMin} min` : ''],
+              ['Calories', workout.calories != null ? `${workout.calories} kcal` : ''],
+              ['Avg HR', ''],
+              ['Zones', ''],
             ].map(([k, v]) => (
               <AppCard key={k} style={styles.stat}>
                 <AppText variant="caption">{k}</AppText>

@@ -41,7 +41,7 @@ app.add_middleware(JWTAuthMiddleware)
 app.include_router(uptime_router)
 app.include_router(api_v1_router)
 
-# Legacy routes (data & gamification — unchanged for mobile integration)
+# Legacy routes (data & gamification  unchanged for mobile integration)
 app.include_router(health_router)
 app.include_router(analytics_router)
 app.include_router(streaks_router)

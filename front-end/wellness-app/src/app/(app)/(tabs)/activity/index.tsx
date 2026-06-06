@@ -13,7 +13,7 @@ export default function ActivityToday() {
   const { status, data, workouts } = useHealthConnect();
   const steps = data.steps ?? 0;
   const distanceKm =
-    data.steps != null ? (Math.round(data.steps * 0.0008 * 10) / 10).toFixed(1) : '—';
+    data.steps != null ? (Math.round(data.steps * 0.0008 * 10) / 10).toFixed(1) : '';
 
   useEffect(() => {
     if (status === 'unavailable') {
@@ -60,15 +60,15 @@ export default function ActivityToday() {
         {[
           {
             label: 'Heart rate',
-            value: data.avgHeartRate != null ? `${data.avgHeartRate} bpm` : '—',
+            value: data.avgHeartRate != null ? `${data.avgHeartRate} bpm` : '',
           },
           {
             label: 'Active cal',
             value: workouts.length
               ? `${workouts.reduce((s, w) => s + (w.calories ?? 0), 0)}`
-              : '—',
+              : '',
           },
-          { label: 'Distance', value: distanceKm === '—' ? '—' : `${distanceKm} km` },
+          { label: 'Distance', value: distanceKm === '' ? '' : `${distanceKm} km` },
         ].map((s) => (
           <AppCard key={s.label} style={styles.stat}>
             <AppText variant="caption">{s.label}</AppText>
@@ -96,7 +96,7 @@ export default function ActivityToday() {
             <AppCard style={styles.workout}>
               <AppText variant="bodyStrong">{w.type}</AppText>
               <AppText variant="caption">
-                {w.durationMin} min · {w.calories ?? '—'} kcal · {w.source}
+                {w.durationMin} min · {w.calories ?? ''} kcal · {w.source}
               </AppText>
             </AppCard>
           </TouchableOpacity>

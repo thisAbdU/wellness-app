@@ -90,7 +90,7 @@ export default function NutritionHistory() {
     <AppScreen>
       <ScreenHeader title="History" showBack />
       {history.length === 0 ? (
-        <AppText variant="caption">No activity history yet — sync health data to track progress.</AppText>
+        <AppText variant="caption">No activity history yet  sync health data to track progress.</AppText>
       ) : (
         history.map((h) => (
           <AppCard key={h.date} style={styles.row}>

@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase';
 const TABLE_MAP: Record<string, string> = {
   health_metrics: 'health_metrics',
   checkins:       'checkins',
-  // ai_feedbacks intentionally omitted — backend writes, app only reads
+  // ai_feedbacks intentionally omitted  backend writes, app only reads
 };
 
 // ── Enqueue a change ──────────────────────────────────────────────────────────

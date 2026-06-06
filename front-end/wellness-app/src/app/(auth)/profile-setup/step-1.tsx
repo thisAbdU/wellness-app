@@ -31,7 +31,7 @@ export default function ProfileStep1() {
 
   return (
     <AuthCardLayout>
-      <AuthHeader title="About you" subtitle="Step 1 of 6 — Personal info" />
+      <AuthHeader title="About you" subtitle="Step 1 of 6  Personal info" />
       <AuthTextField label="Full name" placeholder="Your name" value={name} onChangeText={setName} />
       <AuthTextField label="Age" keyboardType="numeric" placeholder="28" value={age} onChangeText={setAge} />
       <AppText variant="caption">Gender</AppText>

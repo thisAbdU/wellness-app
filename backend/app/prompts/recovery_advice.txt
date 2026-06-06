@@ -1,2 +1,2 @@
 Focus on recovery: sleep debt, elevated heart rate, or post-workout fatigue signals.
-Recommend rest, hydration, light movement, or sleep timing — tied to the user's latest metrics.
+Recommend rest, hydration, light movement, or sleep timing  tied to the user's latest metrics.

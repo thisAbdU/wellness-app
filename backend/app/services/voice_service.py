@@ -122,9 +122,9 @@ def process_voice_message(
 			raise
 		fallback = True
 		response_text = (
-			"እባክዎ ትንሽ ይጠብቁ — አጭር ጤና ምክር፡ ቀን በቀን እንቅልፍ እና እርምጃዎን ይከታተሉ።"
+			"እባክዎ ትንሽ ይጠብቁ  አጭር ጤና ምክር፡ ቀን በቀን እንቅልፍ እና እርምጃዎን ይከታተሉ።"
 			if detected_lang == "am"
-			else "Please keep tracking sleep and steps — I'll share a fuller tip when the coach is ready."
+			else "Please keep tracking sleep and steps  I'll share a fuller tip when the coach is ready."
 		)
 
 	audio_url = None

@@ -37,7 +37,7 @@ export function Hero() {
           </div>
           {!hasApk ? (
             <p className="mt-4 text-sm text-muted">
-              APK link coming soon — add <code className="rounded bg-primary-light px-1.5 py-0.5 text-xs">NEXT_PUBLIC_APK_DOWNLOAD_URL</code> to your .env
+              APK link coming soon  add <code className="rounded bg-primary-light px-1.5 py-0.5 text-xs">NEXT_PUBLIC_APK_DOWNLOAD_URL</code> to your .env
             </p>
           ) : null}
         </div>
@@ -77,7 +77,7 @@ function PhoneMockup() {
           <div className="mx-3 mb-3 rounded-xl border-l-2 border-l-primary bg-card p-3">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-primary">✦ AI Coach</p>
             <p className="mt-1 text-xs leading-relaxed text-muted">
-              Take a 10-minute walk after lunch — your sleep scores improve on active days.
+              Take a 10-minute walk after lunch  your sleep scores improve on active days.
             </p>
           </div>
         </div>

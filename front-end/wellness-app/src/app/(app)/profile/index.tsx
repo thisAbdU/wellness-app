@@ -55,8 +55,8 @@ export default function ProfileScreen() {
       </View>
       <View style={styles.stats}>
         {[
-          ['Height', profile?.height_cm ? `${profile.height_cm} cm` : '—'],
-          ['Weight', profile?.weight_kg ? `${profile.weight_kg} kg` : '—'],
+          ['Height', profile?.height_cm ? `${profile.height_cm} cm` : ''],
+          ['Weight', profile?.weight_kg ? `${profile.weight_kg} kg` : ''],
           ['Longest streak', `${Math.max(wellnessStreak, activityStreak)}d`],
         ].map(([k, v]) => (
           <AppCard key={k} style={styles.stat}>

@@ -19,7 +19,7 @@ export function OfflineBanner() {
   return (
     <View style={styles.banner}>
       <AppText variant="caption" color="#fff" align="center">
-        Offline — data will sync when connection returns.
+        Offline  data will sync when connection returns.
       </AppText>
     </View>
   );

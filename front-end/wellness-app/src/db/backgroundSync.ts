@@ -28,14 +28,14 @@ async function runSync(userId: string) {
 export function startBackgroundSync(config: SyncConfig) {
   const { userId } = config;
 
-  // 1. Connectivity restore — fires when network comes back
+  // 1. Connectivity restore  fires when network comes back
   netUnsubscribe = NetInfo.addEventListener((state: NetInfoState) => {
     if (state.isConnected && state.isInternetReachable) {
       runSync(userId);
     }
   });
 
-  // 2. App foreground — fires when user returns to app
+  // 2. App foreground  fires when user returns to app
   const appStateSub = AppState.addEventListener(
     'change',
     (nextState: AppStateStatus) => {

@@ -58,12 +58,12 @@ export default function ActivityDayDetail() {
   const sleepHrs =
     data?.sleep_minutes != null
       ? `${Math.floor(data.sleep_minutes / 60)}h ${data.sleep_minutes % 60}m`
-      : '—';
+      : '';
 
   return (
     <AppScreen>
       <ScreenHeader title="Day summary" showBack />
-      <AppText variant="subtitle">{date ? formatDateLabel(date) : '—'}</AppText>
+      <AppText variant="subtitle">{date ? formatDateLabel(date) : ''}</AppText>
 
       {loading ? (
         <View style={styles.center}>
@@ -80,15 +80,15 @@ export default function ActivityDayDetail() {
       ) : (
         <View style={styles.stats}>
           {[
-            ['Steps', data.steps?.toLocaleString() ?? '—'],
+            ['Steps', data.steps?.toLocaleString() ?? ''],
             ['Sleep', sleepHrs],
-            ['Active min', data.active_minutes?.toString() ?? '—'],
-            ['Calories', data.calories_burned != null ? `${data.calories_burned} kcal` : '—'],
-            ['Workouts', data.workout_count?.toString() ?? '—'],
-            ['BIRTU score', data.wellness_score?.toString() ?? '—'],
+            ['Active min', data.active_minutes?.toString() ?? ''],
+            ['Calories', data.calories_burned != null ? `${data.calories_burned} kcal` : ''],
+            ['Workouts', data.workout_count?.toString() ?? ''],
+            ['BIRTU score', data.wellness_score?.toString() ?? ''],
             [
               'Resting HR',
-              data.resting_heart_rate != null ? `${data.resting_heart_rate} bpm` : '—',
+              data.resting_heart_rate != null ? `${data.resting_heart_rate} bpm` : '',
             ],
           ].map(([k, v]) => (
             <AppCard key={k} style={styles.stat}>
