@@ -92,7 +92,7 @@ def notify_contact(
 		fcm_sent = send_push(token, "Emergency Alert", body, data={"type": "emergency", "user_id": user_id})
 
 	sms_sent = False
-	phone = contact.get("phone")
+	phone = contact.get("phone") or contact.get("phone_number")
 	if phone:
 		sms_sent = _send_sms(phone, body)
 

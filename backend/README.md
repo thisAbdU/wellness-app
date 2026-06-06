@@ -30,13 +30,14 @@ Backend for the Wellness Tracker app built with FastAPI, Supabase, and Python.
    pip install --default-timeout=300 -r requirements-optional.txt
    ```
 
-4. Run Supabase migration `supabase/migrations/005_health_records_sync_ai.sql` in the Supabase SQL editor.
+4. Run the SQL files in `supabase/migrations/` in filename order, including
+   `007_emergency_contacts_crud.sql` for emergency contact management.
 
 5. Create `.env` from `.env.example` and set:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
-   - `GEMINI_API_KEY` (required for coach insights)
+   - `GEMINI_API_KEY` (required for coach insights and AI nutrition plans)
    - `CORS_ORIGINS` (optional; defaults include Expo dev ports)
 
 6. Run the server (from `backend/`):
