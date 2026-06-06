@@ -9,6 +9,7 @@ import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { WellnessScoreCard } from '@/components/features/wellness/WellnessScoreCard';
 import { TodaySummary } from '@/components/features/wellness/TodaySummary';
 import { QuickActionGrid } from '@/components/features/wellness/QuickActionGrid';
+import { CoachInsightCard } from '@/components/CoachInsightCard';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useLocalization } from '@/hooks/useLocalization';
@@ -20,7 +21,6 @@ export default function HomeDashboard() {
     health,
     wellnessScore,
     wellnessStreak,
-    insight,
     calories,
     loading,
     error,
@@ -112,18 +112,7 @@ export default function HomeDashboard() {
         ]}
       />
 
-      <TouchableOpacity
-        style={styles.aiCard}
-        onPress={() => navigate('/(app)/(tabs)/home/coach')}
-      >
-        <View style={styles.aiBadge}>
-          <AppText style={styles.aiBadgeText}>✦ AI Coach</AppText>
-        </View>
-        <AppText variant="bodyStrong">Today&apos;s insight</AppText>
-        <AppText variant="caption" style={{ marginTop: Spacing.one }}>
-          {insight ?? 'Tap to get your personalized daily nudge.'}
-        </AppText>
-      </TouchableOpacity>
+      <CoachInsightCard />
 
       <TouchableOpacity
         style={styles.streakRow}
@@ -200,25 +189,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDEDED',
     borderRadius: 8,
   },
-  aiCard: {
-    backgroundColor: Colors.light.backgroundElement,
-    borderRadius: Radius.lg,
-    padding: Spacing.three,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.light.primary,
-    marginBottom: Spacing.three,
-    borderWidth: 0.5,
-    borderColor: Colors.light.border,
-  },
-  aiBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: Colors.light.primaryLight,
-    borderRadius: 20,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginBottom: 8,
-  },
-  aiBadgeText: { fontSize: 10, color: Colors.light.primary, letterSpacing: 0.6 },
   streakRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

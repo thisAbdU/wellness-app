@@ -123,6 +123,7 @@ export type Challenge = {
 export type LeaderboardEntry = {
   user_id: string;
   full_name?: string;
+  avatar_url?: string;
   city?: string;
   metric: string;
   value: number;
@@ -161,11 +162,23 @@ export type Food = {
 };
 
 export type EmergencyContact = {
-  id?: string;
-  user_id?: string;
+  id: string;
+  user_id: string;
   name: string;
-  phone: string;
-  relationship?: string;
+  phone_number: string;
+  relationship: string;
+  is_primary: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type NotificationPreferences = {
+  challenge_updates: boolean;
+  badge_alerts: boolean;
+  coach_insights: boolean;
+  emergency_alerts: boolean;
+  leaderboard_updates: boolean;
+  daily_reminders: boolean;
 };
 
 export type AiInsight = {

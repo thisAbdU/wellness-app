@@ -49,6 +49,10 @@ export async function apiFetch<T>(
     throw new ApiError(res.status, String(detail));
   }
 
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
   return res.json() as Promise<T>;
 }
 
@@ -61,6 +65,17 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
     method: 'POST',
     body: body instanceof FormData ? body : JSON.stringify(body ?? {}),
   });
+}
+
+export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
+  return apiFetch<T>(path, {
+    method: 'PUT',
+    body: JSON.stringify(body ?? {}),
+  });
+}
+
+export async function apiDelete(path: string): Promise<void> {
+  return apiFetch<void>(path, { method: 'DELETE' });
 }
 
 export async function unwrap<T>(response: ApiResponse<T>): Promise<T> {
