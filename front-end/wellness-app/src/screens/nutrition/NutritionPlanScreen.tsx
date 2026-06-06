@@ -58,13 +58,21 @@ export function NutritionPlanScreen() {
     <AppScreen>
       <ScreenHeader title="Nutrition" showMenu />
       <LanguagePicker value={language} onChange={setLanguage} />
-      <AppButton
-        label="Refresh plan"
-        variant="secondary"
-        onPress={() => load(true)}
-        loading={refreshing}
-        style={styles.refresh}
-      />
+      <View style={styles.refreshRow}>
+        <AppButton
+          label="Refresh plan"
+          variant="primary"
+          onPress={() => load(true)}
+          loading={refreshing}
+          style={styles.refresh}
+        />
+        <AppButton
+          label="Regenerate (full)"
+          variant="ghost"
+          onPress={() => { setData(null); load(true); }}
+          style={styles.regenerate}
+        />
+      </View>
 
       {error ? (
         <AppCard style={styles.errorCard}>
@@ -81,7 +89,8 @@ export function NutritionPlanScreen() {
         <>
           <AppText variant="overline" style={styles.section}>Daily plan</AppText>
           <AppCard style={styles.planCard}>
-            <AppText variant="body">{data.plan.plan}</AppText>
+            {/* Parse plan into meal sections if possible */}
+            {renderPlanAsMeals(data.plan.plan)}
           </AppCard>
 
           <AppText variant="overline" style={styles.section}>Calories</AppText>
@@ -153,6 +162,32 @@ function FoodCard({ food, language }: { food: Food; language: NutritionLanguage 
   );
 }
 
+function renderPlanAsMeals(planText: string) {
+  // Try to split by common meal headings
+  const sections = planText.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
+  // If the plan contains explicit meal labels, prefer those
+  const mealRegex = /^(Breakfast|Lunch|Dinner|Snack|Overall)[:\-]\s*/i;
+
+  return (
+    <View>
+      {sections.map((sec, idx) => {
+        const parts = sec.split(/[:\-]\s*/);
+        const maybeLabel = parts[0].match(/^(Breakfast|Lunch|Dinner|Snack|Overall)/i);
+        const label = maybeLabel ? maybeLabel[0] : null;
+        const content = maybeLabel ? sec.replace(new RegExp(`^${label}[:\-]?\s*`, 'i'), '') : sec;
+        return (
+          <View key={idx} style={styles.mealBlock}>
+            {label ? (
+              <AppText variant="bodyStrong" style={styles.mealLabel}>{label}</AppText>
+            ) : null}
+            <AppText variant="body" style={styles.mealContent}>{content}</AppText>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.three },
   refresh: { marginTop: Spacing.three },
@@ -184,4 +219,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   links: { gap: Spacing.two, marginTop: Spacing.four },
+  refreshRow: { flexDirection: 'row', gap: Spacing.two, alignItems: 'center' },
+  regenerate: { marginLeft: Spacing.two },
+  mealBlock: { marginBottom: Spacing.two, paddingBottom: Spacing.two, borderBottomWidth: 1, borderBottomColor: Colors.light.border },
+  mealLabel: { marginBottom: Spacing.one, color: Colors.light.primary },
+  mealContent: { lineHeight: 20 },
 });

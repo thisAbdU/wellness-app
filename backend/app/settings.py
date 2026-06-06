@@ -1,6 +1,7 @@
 """Typed application settings (pydantic-settings)."""
 
 from __future__ import annotations
+import os
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -42,6 +43,11 @@ class Settings(BaseSettings):
 	cors_origins: str = (
 		"http://localhost:8081,http://localhost:19006,"
 		"http://127.0.0.1:8081,http://127.0.0.1:19006"
+	)
+	groq_api_key: str | None = os.getenv("GROQ_API_KEY")
+	groq_model: str = os.getenv(
+		"GROQ_MODEL",
+		"llama-3.3-70b-versatile",
 	)
 
 	@property

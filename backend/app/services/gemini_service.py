@@ -12,13 +12,14 @@ import google.generativeai as genai
 from fastapi import HTTPException, status
 from google.api_core import exceptions as google_exceptions
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from groq import Groq
 
 from app.db.supabase_client import get_supabase_admin_client
 from app.settings import settings
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 CACHE_TTL_HOURS = 6
-MAX_CONTEXT_TOKENS = 2000
+MAX_CONTEXT_TOKENS = 1000
 # Rough chars-per-token estimate for local truncation (avoids count_tokens API).
 _CHARS_PER_TOKEN = 4
 
@@ -249,7 +250,7 @@ class HealthCoachClient:
 	) -> str:
 		type_prompt = _load_prompt(INSIGHT_PROMPT_FILES[insight_type])
 		user_message = f"{type_prompt}\n\nUser health context:\n{context_block}"
-		return self._call_gemini(user_message, timeout_seconds=timeout_seconds)
+		return self._call_groq(user_message, timeout_seconds=timeout_seconds)
 
 	@retry(
 		retry=retry_if_exception_type(google_exceptions.ResourceExhausted),
@@ -257,32 +258,150 @@ class HealthCoachClient:
 		stop=stop_after_attempt(4),
 		reraise=True,
 	)
-	def _call_gemini(self, user_message: str, timeout_seconds: float | None = None) -> str:
+
+	def _call_gemini(
+		self,
+		user_message: str,
+		timeout_seconds: float | None = None,
+	) -> str:
+		print(
+			"CALL_GEMINI start:",
+			"model=",
+			self._model_name,
+			"timeout=",
+			timeout_seconds,
+		)
+		print(
+			"SYSTEM_PROMPT (truncated 500):",
+			(self._system_prompt or "")[:500],
+		)
+		print(
+			"USER_MESSAGE (truncated 1000):",
+			(user_message or "")[:1000],
+		)
+
 		model = genai.GenerativeModel(
 			model_name=self._model_name,
 			system_instruction=self._system_prompt,
 		)
+
 		try:
 			kwargs: dict[str, Any] = {}
+
 			if timeout_seconds is not None:
 				kwargs["request_options"] = {"timeout": timeout_seconds}
+
+			print("generate_content kwargs:", kwargs)
+
 			response = model.generate_content(user_message, **kwargs)
+
+			print("Raw response type:", type(response))
+
+			try:
+				r = repr(response)
+				print("response repr (truncated 1000):", r[:1000])
+			except Exception as e:
+				print("Failed to repr(response):", e)
+
 			text = getattr(response, "text", None)
+
+			try:
+				candidates = getattr(response, "candidates", None)
+				print("response.candidates present?", bool(candidates))
+			except Exception as e:
+				print("Failed to read response.candidates:", e)
+
 			if not text:
+				print("Empty response.text from Gemini — introspecting response attributes")
+
+				try:
+					attrs = [a for a in dir(response) if not a.startswith("_")]
+					print("response attrs keys (first 50):", attrs[:50])
+				except Exception as e:
+					print("Failed to introspect response:", e)
+
 				raise HTTPException(
 					status_code=status.HTTP_502_BAD_GATEWAY,
 					detail="Empty response from Gemini",
 				)
+
+			print("Gemini returned text length=", len(text))
+			print("Gemini text (truncated 1000):", text[:1000])
+
 			return text.strip()
+
 		except google_exceptions.ResourceExhausted as exc:
+			print("Gemini ResourceExhausted (rate limit):", exc)
+
+			import traceback
+			traceback.print_exc()
+
 			raise HTTPException(
 				status_code=status.HTTP_429_TOO_MANY_REQUESTS,
 				detail="Gemini rate limit exceeded",
 			) from exc
+
 		except HTTPException:
+			print("Reraising HTTPException")
 			raise
+
 		except Exception as exc:
+			print("Gemini request failed:", exc)
+
+			import traceback
+			traceback.print_exc()
+
 			raise HTTPException(
 				status_code=status.HTTP_502_BAD_GATEWAY,
 				detail=f"Gemini request failed: {exc}",
+			) from exc
+	
+	def _call_groq(
+		self,
+		user_message: str,
+		timeout_seconds: float | None = None,
+	) -> str:
+		try:
+			client = Groq(
+				api_key=settings.groq_api_key,
+			)
+
+			response = client.chat.completions.create(
+				model=settings.groq_model,
+				messages=[
+					{
+						"role": "system",
+						"content": self._system_prompt,
+					},
+					{
+						"role": "user",
+						"content": user_message,
+					},
+				],
+				temperature=0.7,
+				max_tokens=800,
+			)
+
+			text = response.choices[0].message.content
+
+			if not text:
+				raise HTTPException(
+					status_code=status.HTTP_502_BAD_GATEWAY,
+					detail="Empty response from Groq",
+				)
+
+			return text.strip()
+
+		except HTTPException:
+			raise
+
+		except Exception as exc:
+			import traceback
+
+			print("Groq request failed:", exc)
+			traceback.print_exc()
+
+			raise HTTPException(
+				status_code=status.HTTP_502_BAD_GATEWAY,
+				detail=f"Groq request failed: {exc}",
 			) from exc

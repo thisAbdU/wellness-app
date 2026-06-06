@@ -6,6 +6,8 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Literal
+import random
+
 
 from app.db.helpers import extract_records, first_record
 from app.db.supabase_client import get_supabase_admin_client
@@ -88,55 +90,129 @@ def _eligible_foods(conditions: list[str]) -> list[dict]:
 		foods = [f for f in foods if float(f.get("fat_g") or 0) < 20]
 	return foods
 
+def generate_daily_plan(
+    user_id: str,
+    language: str | None = None,
+) -> dict[str, Any]:
+    _seed_foods_if_empty()
 
-def generate_daily_plan(user_id: str, language: str | None = None) -> dict[str, Any]:
-	_seed_foods_if_empty()
-	profile = _fetch_profile(user_id)
-	activity = _yesterday_activity(user_id)
+    profile = _fetch_profile(user_id)
+    activity = _yesterday_activity(user_id)
 
-	weight = float(profile.get("weight_kg") or 70)
-	height = float(profile.get("height_cm") or 170)
-	age = int(profile.get("age") or 30)
-	gender = str(profile.get("gender") or "male")
-	goal = str(profile.get("fitness_goal") or profile.get("weight_goal") or "maintain")
-	conditions = profile.get("health_conditions") or []
-	if isinstance(conditions, str):
-		conditions = [conditions]
+    weight = float(profile.get("weight_kg") or 70)
+    height = float(profile.get("height_cm") or 170)
+    age = int(profile.get("age") or 30)
+    gender = str(profile.get("gender") or "male")
 
-	bmr = _harris_benedict_bmr(weight, height, age, gender)
-	multiplier = _activity_multiplier(activity["steps"], activity["had_workout"])
-	tdee = bmr * multiplier
-	cal_min, cal_max = _goal_adjustment(goal, tdee)
+    goal = str(
+        profile.get("fitness_goal")
+        or profile.get("weight_goal")
+        or "maintain"
+    )
 
-	foods = _eligible_foods(conditions if isinstance(conditions, list) else [])
-	by_meal = {
-		"breakfast": [f for f in foods if "breakfast" in (f.get("meal_type") or [])],
-		"lunch": [f for f in foods if "lunch" in (f.get("meal_type") or [])],
-		"dinner": [f for f in foods if "dinner" in (f.get("meal_type") or [])],
-	}
+    conditions = profile.get("health_conditions") or []
 
-	context = {
-		"user": {
-			"weight_kg": weight,
-			"goal": goal,
-			"health_conditions": conditions,
-			"preferred_language": language or profile.get("preferred_language") or "en",
-		},
-		"targets": {"calories_min": cal_min, "calories_max": cal_max, "tdee": int(tdee)},
-		"yesterday_activity": activity,
-		"eligible_foods": by_meal,
-	}
+    if isinstance(conditions, str):
+        conditions = [conditions]
 
-	coach = HealthCoachClient()
-	plan_text = coach.generate_with_context(
-		user_id=user_id,
-		insight_type=InsightType.NUTRITION_PLAN,
-		context_block=context,
-		use_cache=True,
-	)
+    bmr = _harris_benedict_bmr(
+        weight,
+        height,
+        age,
+        gender,
+    )
 
-	return {
-		"targets": context["targets"],
-		"plan": plan_text,
-		"food_pool_size": len(foods),
-	}
+    multiplier = _activity_multiplier(
+        activity["steps"],
+        activity["had_workout"],
+    )
+
+    tdee = bmr * multiplier
+
+    cal_min, cal_max = _goal_adjustment(
+        goal,
+        tdee,
+    )
+
+    foods = _eligible_foods(conditions)
+
+    breakfast_options = [
+        f for f in foods
+        if "breakfast" in (f.get("meal_type") or [])
+    ]
+
+    lunch_options = [
+        f for f in foods
+        if "lunch" in (f.get("meal_type") or [])
+    ]
+
+    dinner_options = [
+        f for f in foods
+        if "dinner" in (f.get("meal_type") or [])
+    ]
+
+    breakfast = random.sample(
+        breakfast_options,
+        min(2, len(breakfast_options)),
+    )
+
+    lunch = random.sample(
+        lunch_options,
+        min(2, len(lunch_options)),
+    )
+
+    dinner = random.sample(
+        dinner_options,
+        min(2, len(dinner_options)),
+    )
+
+    selected_plan = {
+        "breakfast": [
+            food["name"]
+            for food in breakfast
+        ],
+        "lunch": [
+            food["name"]
+            for food in lunch
+        ],
+        "dinner": [
+            food["name"]
+            for food in dinner
+        ],
+    }
+
+    ai_context = {
+        "user": {
+            "weight_kg": weight,
+            "goal": goal,
+            "health_conditions": conditions,
+            "preferred_language": (
+                language
+                or profile.get("preferred_language")
+                or "en"
+            ),
+        },
+        "targets": {
+            "calories_min": cal_min,
+            "calories_max": cal_max,
+            "tdee": int(tdee),
+        },
+        "yesterday_activity": activity,
+        "meal_plan": selected_plan,
+    }
+
+    coach = HealthCoachClient()
+
+    explanation = coach.generate_with_context(
+        user_id=user_id,
+        insight_type=InsightType.NUTRITION_PLAN,
+        context_block=ai_context,
+        use_cache=True,
+    )
+
+    return {
+        "targets": ai_context["targets"],
+        "meal_plan": selected_plan,
+        "plan": explanation,
+        "food_pool_size": len(foods),
+    }
