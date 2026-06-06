@@ -21,23 +21,66 @@ MAX_AUDIO_SECONDS = 120
 
 
 def _transcribe(audio_path: Path, language: str | None) -> str:
-	if not settings.openai_api_key:
+	# Use Addis AI STT endpoint instead of OpenAI Whisper.
+	if not settings.addis_api_key:
 		raise HTTPException(
 			status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-			detail="OpenAI API key not configured for Whisper",
+			detail="Addis AI API key not configured for STT",
 		)
-	from openai import OpenAI
+	import requests
+	import json
 
-	client = OpenAI(api_key=settings.openai_api_key)
-	with audio_path.open("rb") as audio_file:
-		kwargs: dict[str, Any] = {"model": "whisper-1", "file": audio_file}
-		if language in ("am", "en"):
-			kwargs["language"] = language
-		result = client.audio.transcriptions.create(**kwargs)
-	return result.text.strip()
+	url = "https://api.addisassistant.com/api/v2/stt"
+	headers = {"x-api-key": settings.addis_api_key}
+
+	# Prepare metadata
+	payload = {"request_data": json.dumps({"language_code": language or "en"})}
+
+	# Send file as multipart
+	with audio_path.open("rb") as f:
+		files = [("audio", (audio_path.name, f, "audio/wav"))]
+		try:
+			resp = requests.post(url, headers=headers, data=payload, files=files, timeout=30)
+			resp.raise_for_status()
+			data = resp.json()
+			# Expected shape: { data: { transcription: '...' } }
+			transcription = None
+			if isinstance(data, dict):
+				if "data" in data and isinstance(data["data"], dict):
+					transcription = data["data"].get("transcription")
+				elif "transcription" in data:
+					transcription = data.get("transcription")
+			if not transcription:
+				raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Invalid STT response: {data}")
+			return transcription.strip()
+		except requests.RequestException as exc:
+			logger.exception("Addis STT request failed: %s", exc)
+			raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
 
 
 def _synthesize_tts(text: str, language: str) -> bytes | None:
+	# Prefer Addis AI TTS if API key is available
+	if settings.addis_api_key:
+		import requests
+		import base64
+		try:
+			url = "https://api.addisassistant.com/api/v1/audio"
+			headers = {"X-API-Key": settings.addis_api_key}
+			# choose a voice id based on language
+			voice_id = "male_1" if language.startswith("am") else "female_1"
+			payload = {"text": text, "language": language if language else "en", "voice_id": voice_id}
+			resp = requests.post(url, headers=headers, json=payload, timeout=30)
+			resp.raise_for_status()
+			data = resp.json()
+			if not isinstance(data, dict) or "audio" not in data:
+				logger.warning("Addis TTS returned unexpected data: %s", data)
+				return None
+			audio_b64 = data["audio"]
+			return base64.b64decode(audio_b64)
+		except requests.RequestException as exc:
+			logger.exception("Addis TTS request failed: %s", exc)
+			return None
+	# Fallback to Google TTS if configured
 	if not settings.google_tts_credentials_json:
 		return None
 	try:

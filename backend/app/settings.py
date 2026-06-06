@@ -33,6 +33,7 @@ class Settings(BaseSettings):
 	gemini_api_key: str | None = None
 	gemini_model: str = "gemini-2.0-flash"
 	openai_api_key: str | None = None
+	addis_api_key: str | None = None
 	firebase_credentials_json: str | None = None
 	google_tts_credentials_json: str | None = None
 	africastalking_api_key: str | None = None
@@ -41,8 +42,11 @@ class Settings(BaseSettings):
 	supabase_storage_bucket: str = "voice-responses"
 	enable_scheduler: bool = True
 	cors_origins: str = (
-		"http://localhost:8081,http://localhost:19006,"
-		"http://127.0.0.1:8081,http://127.0.0.1:19006"
+		"http://localhost:8081,"
+		"http://localhost:19006,"
+		"http://127.0.0.1:8081,"
+		"http://127.0.0.1:19006,"
+		"http://localhost:3000"
 	)
 	groq_api_key: str | None = os.getenv("GROQ_API_KEY")
 	groq_model: str = os.getenv(
