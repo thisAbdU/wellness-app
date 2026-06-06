@@ -20,20 +20,41 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail || !password || !confirmPassword) {
+      Alert.alert('Missing information', 'Please fill in all fields.');
+      return;
+    }
     if (password !== confirmPassword) {
       Alert.alert('Passwords do not match');
       return;
     }
-    if (password.length < 6) {
-      Alert.alert('Password must be at least 6 characters');
+    if (password.length < 8) {
+      Alert.alert('Password too short', 'Password must be at least 8 characters.');
       return;
     }
+    if (!terms) {
+      Alert.alert('Terms required', 'Please agree to the Terms of Service and Privacy Policy.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await signUp(email.trim(), password);
-      replace('/(auth)/profile-setup/step-1');
+      const result = await signUp(normalizedEmail, password);
+      if (result.requiresEmailConfirmation) {
+        Alert.alert(
+          'Check your email',
+          'Account created successfully. Confirm your email, then sign in.',
+          [{ text: 'Go to sign in', onPress: () => replace('/(auth)/sign-in') }],
+        );
+      } else {
+        replace('/(auth)/profile-setup/step-1');
+      }
     } catch (e) {
-      Alert.alert('Sign up failed', e instanceof Error ? e.message : 'Unknown error');
+      const message = e instanceof Error ? e.message : 'Something went wrong while creating your account.';
+      console.error('Unexpected signup error:', e);
+      Alert.alert('Sign up failed', message);
     } finally {
       setLoading(false);
     }

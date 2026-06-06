@@ -1,137 +1,234 @@
 <#
-dump-codebase.ps1
-Creates a codebase dump for backend and frontend into a codebase-dump folder.
-Run from the project root (where backend/ and front-end or frontend/ live).
+.SYNOPSIS
+Creates safe, readable text dumps of the Wellness backend and frontend.
+
+.EXAMPLE
+.\dump-codebase.ps1
+
+.EXAMPLE
+.\dump-codebase.ps1 -OutDir codebase-dump -MaxFileSizeKB 500
 #>
 
+[CmdletBinding()]
 param(
-  [string]$OutDir = "codebase-dump"
+    [string]$OutDir = "codebase-dump",
+    [ValidateRange(1, 10240)]
+    [int]$MaxFileSizeKB = 300,
+    [switch]$NoMetadata
 )
 
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$root = if ($scriptDir -and (Test-Path $scriptDir)) { $scriptDir } else { (Get-Location).Path }
-$fullOut = Join-Path $root $OutDir
+$ErrorActionPreference = "Stop"
+$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$OutputDir = [IO.Path]::GetFullPath((Join-Path $Root $OutDir))
+$Targets = @(
+    [ordered]@{ Name = "backend"; Path = Join-Path $Root "backend" },
+    [ordered]@{ Name = "frontend"; Path = Join-Path $Root "front-end/wellness-app" }
+)
 
-$includeExt = @('.py','.js','.jsx','.ts','.tsx','.json','.toml','.yaml','.yml','.html','.css','.scss','.md')
-$includeNames = @('.env.example')
-$excludeDirs = @('.venv','venv','node_modules','.next','dist','build','.git','__pycache__','.pytest_cache','.mypy_cache','.expo','.turbo','.DS_Store')
+$AllowedExtensions = [Collections.Generic.HashSet[string]]::new(
+    [string[]]@(
+        ".py", ".js", ".jsx", ".ts", ".tsx", ".json", ".html", ".css", ".scss",
+        ".md", ".txt", ".yml", ".yaml", ".toml", ".ini", ".cfg", ".sql"
+    ),
+    [StringComparer]::OrdinalIgnoreCase
+)
+$AllowedNames = [Collections.Generic.HashSet[string]]::new(
+    [string[]]@(".env.example", ".gitignore", ".dockerignore"),
+    [StringComparer]::OrdinalIgnoreCase
+)
+$ExcludedDirectoryNames = [Collections.Generic.HashSet[string]]::new(
+    [string[]]@(
+        ".git", ".github", ".venv", ".venv-1", "venv", "env", "__pycache__",
+        ".pytest_cache", ".mypy_cache", ".ruff_cache", ".expo", ".next", ".turbo",
+        "node_modules", "dist", "build", "coverage", "codebase-dump"
+    ),
+    [StringComparer]::OrdinalIgnoreCase
+)
+$ExcludedFileNames = [Collections.Generic.HashSet[string]]::new(
+    [string[]]@(
+        ".env", ".env.local", ".env.development", ".env.production", ".env.test",
+        "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "bun.lockb",
+        "cover.out", "coverage.xml"
+    ),
+    [StringComparer]::OrdinalIgnoreCase
+)
+$SensitiveNameFragments = @("secret", "private_key", "service_role", "firebase_private")
+$MaxBytes = $MaxFileSizeKB * 1KB
 
-function IsExcludedPath($path) {
-  foreach ($ex in $excludeDirs) {
-    if ($path -like "*$([IO.Path]::DirectorySeparatorChar)$ex*") { return $true }
-    if ($path -like "*$ex*") { return $true }
-  }
-  return $false
+function Get-RelativePath([string]$Path) {
+    $rootUri = [Uri]($Root.TrimEnd("\") + "\")
+    $pathUri = [Uri]$Path
+    return [Uri]::UnescapeDataString($rootUri.MakeRelativeUri($pathUri).ToString()).Replace("/", "\")
 }
 
-function Collect-Files($targetDir) {
-  if (-not (Test-Path $targetDir)) { return @() }
-  $files = Get-ChildItem -Path $targetDir -Recurse -File -ErrorAction SilentlyContinue |
-    Where-Object {
-      # skip if path contains excluded dir
-      if (IsExcludedPath($_.FullName)) { return $false }
-      $ext = $_.Extension.ToLower()
-      if ($includeExt -contains $ext) { return $true }
-      if ($includeNames -contains $_.Name) { return $true }
-      return $false
+function Test-IsExcludedDirectory([IO.DirectoryInfo]$Directory) {
+    if ($ExcludedDirectoryNames.Contains($Directory.Name)) {
+        return $true
     }
-  return $files
+
+    $relative = (Get-RelativePath $Directory.FullName).Replace("\", "/").ToLowerInvariant()
+    return (
+        $relative -match "(^|/)android/\.gradle($|/)" -or
+        $relative -match "(^|/)android/build($|/)" -or
+        $relative -match "(^|/)android/app/build($|/)" -or
+        $relative -match "(^|/)ios/build($|/)"
+    )
 }
 
-function Write-Dump($files, $outFile) {
-  $writeMsg = "Writing dump: $outFile ({0} files)" -f $files.Count
-  Write-Host $writeMsg
-  "`n---- CODEBASE DUMP: $outFile ----`n" | Out-File -FilePath $outFile -Encoding utf8
-  foreach ($f in $files) {
-    $rel = $f.FullName.Substring($root.Length + 1)
-    "=== FILE: $rel ===" | Out-File -FilePath $outFile -Encoding utf8 -Append
+function Test-IsBinary([string]$Path) {
+    $stream = [IO.File]::OpenRead($Path)
     try {
-      Get-Content -Path $f.FullName -Raw -ErrorAction Stop | Out-File -FilePath $outFile -Encoding utf8 -Append
-    } catch {
-      "<<< Could not read file (binary or access error): $($f.FullName) >>>" | Out-File -FilePath $outFile -Encoding utf8 -Append
+        $buffer = New-Object byte[] 4096
+        $read = $stream.Read($buffer, 0, $buffer.Length)
+        for ($index = 0; $index -lt $read; $index++) {
+            if ($buffer[$index] -eq 0) {
+                return $true
+            }
+        }
+        return $false
     }
-    "`n-----`n" | Out-File -FilePath $outFile -Encoding utf8 -Append
-  }
-}
-
-function Write-ProjectTree($targetDirs, $outFile) {
-  Write-Host "Generating project tree: $outFile"
-  "PROJECT TREE for $root`n" | Out-File -FilePath $outFile -Encoding utf8
-  foreach ($d in $targetDirs) {
-    if (-not (Test-Path $d)) { continue }
-    $items = Get-ChildItem -Path $d -Recurse -Force -ErrorAction SilentlyContinue |
-      Where-Object { -not (IsExcludedPath($_.FullName)) } |
-      Sort-Object FullName
-    foreach ($it in $items) {
-      $rel = $it.FullName.Substring($root.Length + 1)
-      if ($it.PSIsContainer) {
-        "[D] $rel" | Out-File -FilePath $outFile -Encoding utf8 -Append
-      } else {
-        "- $rel" | Out-File -FilePath $outFile -Encoding utf8 -Append
-      }
+    finally {
+        $stream.Dispose()
     }
-    "`n" | Out-File -FilePath $outFile -Encoding utf8 -Append
-  }
 }
 
-# prepare output folder
-if (Test-Path $fullOut) {
-  Write-Host "Output folder exists: $fullOut"
-} else {
-  Write-Host "Creating output folder: $fullOut"
-  New-Item -ItemType Directory -Path $fullOut -Force | Out-Null
+function Test-IncludeFile([IO.FileInfo]$File) {
+    if ($ExcludedFileNames.Contains($File.Name)) {
+        return $false
+    }
+
+    $lowerName = $File.Name.ToLowerInvariant()
+    foreach ($fragment in $SensitiveNameFragments) {
+        if ($lowerName.Contains($fragment)) {
+            return $false
+        }
+    }
+
+    if (-not ($AllowedNames.Contains($File.Name) -or $AllowedExtensions.Contains($File.Extension))) {
+        return $false
+    }
+
+    if ($File.Length -gt $MaxBytes) {
+        return $false
+    }
+
+    return -not (Test-IsBinary $File.FullName)
 }
 
-# target folders (handle both possible frontend names)
-$backendDir = Join-Path $root 'backend'
-$frontendDirs = @()
-$frontendDirs += (Join-Path $root 'front-end')
-$frontendDirs += (Join-Path $root 'frontend')
-$frontendDirs = $frontendDirs | Where-Object { $_ -ne $null }
+function Get-IncludedFiles([string]$TargetPath) {
+    if (-not (Test-Path -LiteralPath $TargetPath -PathType Container)) {
+        Write-Warning "Target folder does not exist: $TargetPath"
+        return @()
+    }
 
-# collect files
-Write-Host "Collecting backend files..."
-$backendFiles = Collect-Files $backendDir
+    $pending = [Collections.Generic.Stack[IO.DirectoryInfo]]::new()
+    $pending.Push([IO.DirectoryInfo]$TargetPath)
+    $files = [Collections.Generic.List[IO.FileInfo]]::new()
 
-Write-Host "Collecting frontend files..."
-$frontendFiles = @()
-foreach ($fd in $frontendDirs) {
-  if (Test-Path $fd) {
-    $frontendFiles += Collect-Files $fd
-  }
+    while ($pending.Count -gt 0) {
+        $directory = $pending.Pop()
+
+        foreach ($childDirectory in $directory.EnumerateDirectories()) {
+            if (-not (Test-IsExcludedDirectory $childDirectory)) {
+                $pending.Push($childDirectory)
+            }
+        }
+
+        foreach ($file in $directory.EnumerateFiles()) {
+            if (Test-IncludeFile $file) {
+                $files.Add($file)
+            }
+        }
+    }
+
+    return @($files | Sort-Object FullName)
 }
 
-# write separate dumps
-$backendDump = Join-Path $fullOut 'backend-dump.txt'
-$frontendDump = Join-Path $fullOut 'frontend-dump.txt'
-$projectTree = Join-Path $fullOut 'project-tree.txt'
-$fullDump = Join-Path $fullOut 'full-codebase-dump.txt'
-
-if ($backendFiles.Count -gt 0) {
-  Write-Dump -files $backendFiles -outFile $backendDump
-} else {
-  Write-Host "No backend files found or backend folder missing. Creating empty backend dump."
-  "No backend files found." | Out-File -FilePath $backendDump -Encoding utf8
+function Get-ShortHash([string]$Path) {
+    $hash = Get-FileHash -LiteralPath $Path -Algorithm SHA256
+    return $hash.Hash.Substring(0, 12).ToLowerInvariant()
 }
 
-if ($frontendFiles.Count -gt 0) {
-  Write-Dump -files $frontendFiles -outFile $frontendDump
-} else {
-  Write-Host "No frontend files found or frontend folder missing. Creating empty frontend dump."
-  "No frontend files found." | Out-File -FilePath $frontendDump -Encoding utf8
+function Format-Bytes([long]$Bytes) {
+    if ($Bytes -ge 1MB) { return "{0:N2} MB" -f ($Bytes / 1MB) }
+    if ($Bytes -ge 1KB) { return "{0:N2} KB" -f ($Bytes / 1KB) }
+    return "$Bytes bytes"
 }
 
-# combined dump (optional)
-Write-Host "Generating combined dump..."
-"`n---- COMBINED DUMP ----`n" | Out-File -FilePath $fullDump -Encoding utf8
-Get-Content $backendDump -ErrorAction SilentlyContinue | Out-File -FilePath $fullDump -Encoding utf8 -Append
-Get-Content $frontendDump -ErrorAction SilentlyContinue | Out-File -FilePath $fullDump -Encoding utf8 -Append
+function Write-Dump([IO.FileInfo[]]$Files, [string]$OutputPath, [string[]]$IncludedFolders) {
+    $generatedAt = Get-Date -Format "yyyy-MM-dd HH:mm:ss zzz"
+    $totalBytes = [long](($Files | Measure-Object Length -Sum).Sum)
+    $builder = [Text.StringBuilder]::new()
 
-# project tree
-$targetDirs = @($backendDir) + $frontendDirs
-Write-ProjectTree -targetDirs $targetDirs -outFile $projectTree
+    if (-not $NoMetadata) {
+        [void]$builder.AppendLine("=" * 80)
+        [void]$builder.AppendLine("WELLNESS CODEBASE DUMP")
+        [void]$builder.AppendLine("=" * 80)
+        [void]$builder.AppendLine("Generated: $generatedAt")
+        [void]$builder.AppendLine("Root: $Root")
+        [void]$builder.AppendLine("Included folders: $($IncludedFolders -join ', ')")
+        [void]$builder.AppendLine("Maximum file size: $MaxFileSizeKB KB")
+        [void]$builder.AppendLine()
+    }
 
-# final summary
-Write-Host "`nDone. Generated files in: $fullOut"
-Get-ChildItem -Path $fullOut -File | ForEach-Object { Write-Host (" - " + $_.FullName) }
-Write-Host "`nTip: share the files in $OutDir; do NOT include real secrets like .env (script only includes .env.example)."
+    [void]$builder.AppendLine("DIRECTORY TREE")
+    [void]$builder.AppendLine("-" * 80)
+    foreach ($file in $Files) {
+        $relative = Get-RelativePath $file.FullName
+        [void]$builder.AppendLine($relative)
+    }
+    [void]$builder.AppendLine()
+    [void]$builder.AppendLine("FILE CONTENTS")
+
+    foreach ($file in $Files) {
+        $relative = Get-RelativePath $file.FullName
+        [void]$builder.AppendLine()
+        [void]$builder.AppendLine("=" * 80)
+        [void]$builder.AppendLine("FILE: $relative")
+        [void]$builder.AppendLine("SIZE: $(Format-Bytes $file.Length)")
+        [void]$builder.AppendLine("SHA256: $(Get-ShortHash $file.FullName)")
+        [void]$builder.AppendLine("-" * 80)
+        [void]$builder.AppendLine([IO.File]::ReadAllText($file.FullName))
+    }
+
+    [void]$builder.AppendLine()
+    [void]$builder.AppendLine("=" * 80)
+    [void]$builder.AppendLine("SUMMARY")
+    [void]$builder.AppendLine("=" * 80)
+    [void]$builder.AppendLine("Files included: $($Files.Count)")
+    [void]$builder.AppendLine("Total source size: $(Format-Bytes $totalBytes)")
+    [void]$builder.AppendLine("Rough token estimate: $([Math]::Ceiling($totalBytes / 4))")
+
+    [IO.File]::WriteAllText($OutputPath, $builder.ToString(), [Text.UTF8Encoding]::new($false))
+}
+
+New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+
+$BackendFiles = @(Get-IncludedFiles $Targets[0].Path)
+$FrontendFiles = @(Get-IncludedFiles $Targets[1].Path)
+$AllFiles = @($BackendFiles + $FrontendFiles | Sort-Object FullName)
+
+$BackendDump = Join-Path $OutputDir "backend-dump.txt"
+$FrontendDump = Join-Path $OutputDir "frontend-dump.txt"
+$FullDump = Join-Path $OutputDir "full-codebase-dump.txt"
+$ProjectTree = Join-Path $OutputDir "project-tree.txt"
+
+Write-Dump $BackendFiles $BackendDump @("backend")
+Write-Dump $FrontendFiles $FrontendDump @("front-end/wellness-app")
+Write-Dump $AllFiles $FullDump @("backend", "front-end/wellness-app")
+
+$treeLines = @(
+    "PROJECT TREE"
+    "Root: $Root"
+    "Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss zzz')"
+    ""
+) + @($AllFiles | ForEach-Object { Get-RelativePath $_.FullName })
+[IO.File]::WriteAllLines($ProjectTree, $treeLines, [Text.UTF8Encoding]::new($false))
+
+Write-Host ""
+Write-Host "Codebase dump generated successfully."
+Write-Host "Output: $OutputDir"
+Write-Host "Backend files: $($BackendFiles.Count)"
+Write-Host "Frontend files: $($FrontendFiles.Count)"
+Write-Host "Total files: $($AllFiles.Count)"
+Write-Host "Full dump: $FullDump"
