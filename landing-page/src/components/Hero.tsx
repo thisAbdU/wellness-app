@@ -1,10 +1,30 @@
+'use client';
+
 import { siteConfig } from '@/lib/config';
+import { motion } from 'framer-motion';
+
+// Workaround for framer-motion types with React 19 in this project: cast to any
+const MotionDiv: any = motion.div;
+const MotionBadge: any = motion.div;
 
 export function Hero() {
   const hasApk = Boolean(siteConfig.apkUrl);
 
   return (
     <section className="relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
+      {/* Background video - drop your MP4 at public/birtu-hero.mp4 or update the src path */}
+      <div className="hidden lg:block">
+        <video
+          src="/birtu-hero.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="pointer-events-none absolute right-8 top-8 h-[420px] w-[420px] rounded-3xl object-cover opacity-90 z-0"
+          aria-hidden
+        />
+      </div>
+
       <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-primary-light/60 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-accent-mint/30 blur-3xl" />
 
@@ -41,10 +61,6 @@ export function Hero() {
             </p>
           ) : null}
         </div>
-
-        <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-          <PhoneMockup />
-        </div>
       </div>
     </section>
   );
@@ -56,7 +72,16 @@ function PhoneMockup() {
       <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-primary/20 via-accent-mint/20 to-transparent blur-2xl" />
       <div className="relative rounded-[2rem] border-8 border-foreground/90 bg-foreground p-2 shadow-2xl">
         <div className="overflow-hidden rounded-[1.4rem] bg-background">
-          <div className="bg-primary px-4 py-6 text-white">
+          <div className="relative bg-primary px-4 py-6 text-white">
+            <MotionBadge
+              initial={{ scale: 0.9, opacity: 0.7 }}
+              animate={{ scale: [0.95, 1.08, 0.95], opacity: [0.8, 1, 0.8] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute -right-4 -top-4 flex h-10 w-10 items-center justify-center rounded-full bg-accent-mint text-xs font-semibold text-white shadow-lg"
+              aria-hidden
+            >
+              ✚
+            </MotionBadge>
             <p className="text-xs uppercase tracking-wider opacity-70">BIRTU score</p>
             <p className="mt-1 text-5xl font-medium">82</p>
             <p className="mt-2 text-sm opacity-80">You are doing well. Keep the momentum.</p>

@@ -12,7 +12,8 @@
   "dependencies": {
     "next": "^15.5.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "framer-motion": "^10.12.16"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.12",

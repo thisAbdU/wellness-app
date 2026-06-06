@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Animated, Pressable, Platform, StyleSheet, View } from 'react-native';
 import { Audio } from 'expo-av';
 import { navigate } from '@/lib/router';
 import { AppScreen } from '@/components/ui/AppScreen';
@@ -12,6 +12,8 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { saveAiInsight } from '@/services/profileService';
 import type { VoiceCoachResult } from '@/lib/api/types';
+import * as FileSystem from 'expo-file-system';
+import { supabase } from '@/lib/supabase';
 
 type Phase = 'idle' | 'recording' | 'processing' | 'response';
 
@@ -70,24 +72,90 @@ export default function VoiceCoachScreen() {
     }
   };
 
-  const stopRecording = async () => {
-    const recording = recordingRef.current;
-    if (!recording) return;
-    setPhase('processing');
-    try {
-      await recording.stopAndUnloadAsync();
-      const uri = recording.getURI();
-      recordingRef.current = null;
-      if (!uri) throw new Error('No recording URI');
+const stopRecording = async () => {
+  const recording = recordingRef.current;
+  if (!recording) return;
 
-      const response = await api.coach.voice(uri, lang);
-      setResult(response);
-      setPhase('response');
-    } catch (e) {
-      Alert.alert('Error', e instanceof Error ? e.message : 'Failed to process voice');
-      setPhase('idle');
+  setPhase('processing');
+
+  try {
+    await recording.stopAndUnloadAsync();
+    const uri = recording.getURI();
+    recordingRef.current = null;
+
+    if (!uri) throw new Error('No recording URI');
+
+    const host = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
+    const backendUrl = `http://${host}:8000/api/v1/coach/voice`;
+
+    const filename = uri.split('/').pop() || `recording-${Date.now()}.wav`;
+    const ext = (filename.split('.').pop() || '').toLowerCase();
+    const mime =
+      ext === 'm4a' ? 'audio/m4a' :
+      ext === 'wav' ? 'audio/wav' :
+      ext === 'mp3' ? 'audio/mpeg' :
+      ext === 'aac' ? 'audio/aac' :
+      'audio/webm'; // web default
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    const authHeader = session?.access_token
+    ? `Bearer ${session.access_token}` : null;
+
+    let json: any;
+
+    if (Platform.OS === 'web') {
+      // Web: fetch the blob URI and send via FormData
+      const blobRes = await fetch(uri);
+      const blob = await blobRes.blob();
+
+      const formData = new FormData();
+      formData.append('audio', blob, filename);
+      formData.append('language', lang);
+      
+
+      const res = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Upload failed (${res.status}): ${text}`);
+      }
+
+      json = await res.json();
+    } else {
+      // Native: use FileSystem.uploadAsync
+      const uploadResult = await FileSystem.uploadAsync(backendUrl, uri, {
+        fieldName: 'audio',
+        httpMethod: 'POST',
+        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+        parameters: { language: lang },
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+      });
+
+      if (uploadResult.status < 200 || uploadResult.status >= 300) {
+        throw new Error(`Upload failed (${uploadResult.status}): ${uploadResult.body}`);
+      }
+
+      json = JSON.parse(uploadResult.body);
     }
-  };
+
+    if (!json?.success) throw new Error(`Server error: ${JSON.stringify(json)}`);
+
+    setResult(json.data ?? json);
+    setPhase('response');
+  } catch (e) {
+    Alert.alert('Error', e instanceof Error ? e.message : 'Failed to process voice');
+    setPhase('idle');
+  }
+};
 
   const playResponse = async () => {
     if (!result?.audio_url) {
