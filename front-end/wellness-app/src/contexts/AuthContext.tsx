@@ -27,7 +27,7 @@ type AuthContextValue = {
   hasCompletedProfile: boolean;
   hasSeenOnboarding: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<{ requiresEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   sendPhoneOtp: (phone: string) => Promise<void>;
@@ -107,8 +107,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) throw error;
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) {
+      console.error('Supabase signup error:', error.message, {
+        status: error.status,
+        code: error.code,
+      });
+      throw error;
+    }
+
+    console.info('Supabase signup succeeded:', {
+      userId: data.user?.id,
+      hasSession: Boolean(data.session),
+    });
+
+    return { requiresEmailConfirmation: Boolean(data.user && !data.session) };
   }, []);
 
   const signOut = useCallback(async () => {
