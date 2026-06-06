@@ -1,5 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import type { EmergencyContact, UserProfile } from '@/lib/api/types';
+import {
+  createEmergencyContact,
+  fetchEmergencyContacts as fetchEmergencyContactsFromApi,
+} from '@/services/emergencyContactService';
 
 const FITNESS_GOAL_MAP: Record<string, string> = {
   'Lose Weight': 'lose',
@@ -88,28 +92,19 @@ export async function upsertProfile(
 }
 
 export async function saveEmergencyContact(
-  userId: string,
+  _userId: string,
   contact: { name: string; phone: string; relationship?: string },
 ): Promise<void> {
-  const { error } = await supabase.from('emergency_contacts').upsert(
-    {
-      user_id: userId,
-      name: contact.name,
-      phone: contact.phone,
-      relationship: contact.relationship ?? 'Family',
-    },
-    { onConflict: 'user_id' },
-  );
-  if (error) throw error;
+  await createEmergencyContact({
+    name: contact.name,
+    phone_number: contact.phone,
+    relationship: contact.relationship ?? 'Family',
+    is_primary: true,
+  });
 }
 
-export async function fetchEmergencyContacts(userId: string): Promise<EmergencyContact[]> {
-  const { data, error } = await supabase
-    .from('emergency_contacts')
-    .select('*')
-    .eq('user_id', userId);
-  if (error) throw error;
-  return data ?? [];
+export async function fetchEmergencyContacts(_userId: string): Promise<EmergencyContact[]> {
+  return fetchEmergencyContactsFromApi();
 }
 
 export async function fetchFoods(): Promise<import('@/lib/api/types').Food[]> {

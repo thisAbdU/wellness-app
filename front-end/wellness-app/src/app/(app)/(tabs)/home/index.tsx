@@ -16,6 +16,7 @@ import { ScreenHeader } from '@/components/navigation/ScreenHeader';
 import { WellnessScoreCard } from '@/components/features/wellness/WellnessScoreCard';
 import { TodaySummary } from '@/components/features/wellness/TodaySummary';
 import { QuickActionGrid } from '@/components/features/wellness/QuickActionGrid';
+import { CoachInsightCard } from '@/components/CoachInsightCard';
 import { Colors, Radius, Spacing } from '@/constants/theme';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useLocalization } from '@/hooks/useLocalization';
@@ -28,8 +29,6 @@ export default function HomeDashboard() {
     health,
     wellnessScore,
     wellnessStreak,
-    insight,
-    insightLoading,
     calories,
     loading,
     error,
@@ -170,22 +169,7 @@ export default function HomeDashboard() {
         ]}
       />
 
-      <TouchableOpacity style={styles.aiCard} onPress={() => navigate('/(app)/(tabs)/home/coach')}>
-        <View style={styles.aiHeader}>
-          <View style={styles.aiBadge}>
-            <AppText style={styles.aiBadgeText}>✦ AI Coach</AppText>
-          </View>
-          {insightLoading ? (
-            <ActivityIndicator size="small" color={Colors.light.primary} />
-          ) : (
-            <AppText variant="link">Open →</AppText>
-          )}
-        </View>
-        <AppText variant="bodyStrong">Today&apos;s insight</AppText>
-        <AppText variant="body" style={styles.insightText}>
-          {insight ?? 'Tap to get your personalized daily nudge.'}
-        </AppText>
-      </TouchableOpacity>
+      <CoachInsightCard />
 
       <TouchableOpacity
         style={styles.streakRow}
@@ -337,36 +321,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDEDED',
     borderRadius: 8,
   },
-  aiCard: {
-    width: '100%',
-    backgroundColor: Colors.light.backgroundElement,
-    borderRadius: Radius.lg,
-    padding: Spacing.three,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.light.primary,
-    marginBottom: Spacing.three,
-    borderWidth: 0.5,
-    borderColor: Colors.light.border,
-    shadowColor: Colors.light.cardShadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 1,
-    shadowRadius: 16,
-    elevation: 2,
-  },
-  aiHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.two,
-  },
-  aiBadge: {
-    backgroundColor: Colors.light.primaryLight,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  aiBadgeText: { fontSize: 10, color: Colors.light.primary, letterSpacing: 0.6 },
-  insightText: { marginTop: Spacing.one, lineHeight: 22, color: Colors.light.textSecondary },
   streakRow: {
     width: '100%',
     flexDirection: 'row',
